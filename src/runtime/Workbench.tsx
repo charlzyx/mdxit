@@ -32,8 +32,7 @@ import {
   Palette,
   Sun,
   Check,
-  TableOfContents,
-  ArrowBigLeft
+  TableOfContents
 } from "lucide-react";
 import { ComponentType, useEffect, useMemo, useState } from "react";
 import { documents, type MdxitDocument } from "./document-registry";
@@ -127,14 +126,16 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   return (
     <Box>
       <Tooltip label={navOpened ? "收起侧栏" : "展开侧栏"}>
-        <ArrowBigLeft
+        <ActionIcon
+          style={{ border: 'none', background: 'none' }}
           aria-label="Toggle sidebar"
           className="side-toggle side-toggle-left"
           data-open={navOpened || undefined}
           onClick={nav.toggle}
+          variant="subtle"
         >
           {navOpened ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </ArrowBigLeft>
+        </ActionIcon>
       </Tooltip>
       <Tooltip label={asideOpened ? "收起目录" : "展开目录"}>
         <ActionIcon
@@ -148,165 +149,165 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
         </ActionIcon>
       </Tooltip>
       <AppShell
-      aside={{
-        width: 280,
-        breakpoint: "md",
-        collapsed: { desktop: !asideOpened, mobile: !asideOpened }
-      }}
-      header={{ height: 56 }}
-      navbar={{
-        width: 290,
-        breakpoint: "md",
-        collapsed: { desktop: !navOpened, mobile: !navOpened }
-      }}
-      padding="md"
-    >
-      <AppShell.Header>
-        <Group className="topbar" h="100%" justify="space-between" px="md">
-          <Group className="topbar-left" gap="sm" wrap="nowrap">
-            {__MDXIT_TARGET_IS_DIR__ ? (
-              <Tooltip label="Dashboard">
-                <ActionIcon
-                  aria-label="Open dashboard"
-                  onClick={() => setActiveId("__dashboard__")}
-                  variant="subtle"
-                >
-                  <Home size={18} />
-                </ActionIcon>
-              </Tooltip>
-            ) : null}
-            <div className="topbar-title">
-              <Text className="topbar-kicker" c="dimmed" size="xs">
-                MDXit · {isDashboard ? "Document Set" : activeDocument?.group ?? "Review"}
-              </Text>
-              <Text className="topbar-heading" fw={850} lh={1.1}>
-                {isDashboard ? "Dashboard" : activeDocument?.title ?? "Review Document"}
-              </Text>
-            </div>
-          </Group>
-
-          <Group className="topbar-actions" gap="xs" wrap="nowrap">
-            <Menu position="bottom-end" shadow="md" width={160}>
-              <Menu.Target>
-                <ActionIcon aria-label="Theme" variant="subtle">
-                  <Palette size={18} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {themes.map((item) => (
-                  <Menu.Item
-                    key={item.name}
-                    leftSection={theme === item.name ? <Check size={14} /> : <span className="theme-menu-spacer" />}
-                    onClick={() => setTheme(item.name)}
+        aside={{
+          width: 280,
+          breakpoint: "md",
+          collapsed: { desktop: !asideOpened, mobile: !asideOpened }
+        }}
+        header={{ height: 56 }}
+        navbar={{
+          width: 290,
+          breakpoint: "md",
+          collapsed: { desktop: !navOpened, mobile: !navOpened }
+        }}
+        padding="md"
+      >
+        <AppShell.Header>
+          <Group className="topbar" h="100%" justify="space-between" px="md">
+            <Group className="topbar-left" gap="sm" wrap="nowrap">
+              {__MDXIT_TARGET_IS_DIR__ ? (
+                <Tooltip label="Dashboard">
+                  <ActionIcon
+                    aria-label="Open dashboard"
+                    onClick={() => setActiveId("__dashboard__")}
+                    variant="subtle"
                   >
-                    {item.label ?? item.name}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-          </Group>
-        </Group>
-      </AppShell.Header>
-
-      <AppShell.Navbar p="sm">
-        <Stack gap="sm">
-          <TextInput
-            leftSection={<Search size={15} />}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter documents"
-            size="sm"
-            value={query}
-          />
-          <ScrollArea h="calc(100vh - 130px)" offsetScrollbars>
-            <Tree
-              className="document-tree"
-              data={treeData}
-              expandOnClick
-              levelOffset="md"
-              renderNode={({ node, expanded, hasChildren, elementProps, selected }) => (
-                <Group
-                  {...elementProps}
-                  className={`document-tree-node ${selected ? "document-tree-node-active" : ""}`}
-                  gap={6}
-                  wrap="nowrap"
-                >
-                  {hasChildren ? (
-                    <ChevronDown className="document-tree-chevron" data-expanded={expanded || undefined} size={14} />
-                  ) : (
-                    <span className="document-tree-spacer" />
-                  )}
-                  <Text lineClamp={1} size="sm">
-                    {node.label}
-                  </Text>
-                </Group>
-              )}
-              selectOnClick
-              tree={tree}
-              withLines
-            />
-          </ScrollArea>
-        </Stack>
-      </AppShell.Navbar>
-
-      <AppShell.Main>
-        <Box className="document-stage">
-          {isDashboard ? (
-            <DocumentDashboard documents={visibleDocuments} onOpen={setActiveId} />
-          ) : (
-            <ActiveDocument />
-          )}
-        </Box>
-        <SelectionToolbar />
-      </AppShell.Main>
-
-      <AppShell.Aside p="sm">
-        <ScrollArea h="calc(100vh - 80px)" offsetScrollbars>
-          <Stack gap="lg">
-            <Box>
-              <Group gap="xs" mb="xs">
-                <TableOfContents size={16} />
-                <Title order={3}>目录</Title>
-              </Group>
-              <Stack gap={2}>
-                {toc.length ? (
-                  toc.map((item) => (
-                    <Anchor
-                      className="toc-link"
-                      href={`#${item.id}`}
-                      key={item.id}
-                      pl={item.level === 3 ? "xl" : item.level === 2 ? "md" : "xs"}
-                      size="sm"
-                      underline="never"
-                    >
-                      {item.text}
-                    </Anchor>
-                  ))
-                ) : (
-                  <Text c="dimmed" size="sm">
-                    {isDashboard ? "Open a document to view its TOC." : "No headings yet."}
-                  </Text>
-                )}
-              </Stack>
-            </Box>
-
-            <Box>
-              <Group gap="xs" mb="xs">
-                {theme === "ink" ? <Moon size={16} /> : <Sun size={16} />}
-                <Title order={3}>当前文档</Title>
-              </Group>
-              <Text c="dimmed" size="sm">
-                {activeDocument?.description ?? "Previewing current MDX document."}
-              </Text>
-              {activeDocument ? (
-                <Badge mt="sm" variant="light">
-                  {activeDocument.group}
-                </Badge>
+                    <Home size={18} />
+                  </ActionIcon>
+                </Tooltip>
               ) : null}
-            </Box>
+              <div className="topbar-title">
+                <Text className="topbar-kicker" c="dimmed" size="xs">
+                  MDXit · {isDashboard ? "Document Set" : activeDocument?.group ?? "Review"}
+                </Text>
+                <Text className="topbar-heading" fw={850} lh={1.1}>
+                  {isDashboard ? "Dashboard" : activeDocument?.title ?? "Review Document"}
+                </Text>
+              </div>
+            </Group>
+
+            <Group className="topbar-actions" gap="xs" wrap="nowrap">
+              <Menu position="bottom-end" shadow="md" width={160}>
+                <Menu.Target>
+                  <ActionIcon aria-label="Theme" variant="subtle">
+                    <Palette size={18} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {themes.map((item) => (
+                    <Menu.Item
+                      key={item.name}
+                      leftSection={theme === item.name ? <Check size={14} /> : <span className="theme-menu-spacer" />}
+                      onClick={() => setTheme(item.name)}
+                    >
+                      {item.label ?? item.name}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
+          </Group>
+        </AppShell.Header>
+
+        <AppShell.Navbar p="sm">
+          <Stack gap="sm">
+            <TextInput
+              leftSection={<Search size={15} />}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Filter documents"
+              size="sm"
+              value={query}
+            />
+            <ScrollArea h="calc(100vh - 130px)" offsetScrollbars>
+              <Tree
+                className="document-tree"
+                data={treeData}
+                expandOnClick
+                levelOffset="md"
+                renderNode={({ node, expanded, hasChildren, elementProps, selected }) => (
+                  <Group
+                    {...elementProps}
+                    className={`document-tree-node ${selected ? "document-tree-node-active" : ""}`}
+                    gap={6}
+                    wrap="nowrap"
+                  >
+                    {hasChildren ? (
+                      <ChevronDown className="document-tree-chevron" data-expanded={expanded || undefined} size={14} />
+                    ) : (
+                      <span className="document-tree-spacer" />
+                    )}
+                    <Text lineClamp={1} size="sm">
+                      {node.label}
+                    </Text>
+                  </Group>
+                )}
+                selectOnClick
+                tree={tree}
+                withLines
+              />
+            </ScrollArea>
           </Stack>
-        </ScrollArea>
-      </AppShell.Aside>
-    </AppShell>
+        </AppShell.Navbar>
+
+        <AppShell.Main>
+          <Box className="document-stage">
+            {isDashboard ? (
+              <DocumentDashboard documents={visibleDocuments} onOpen={setActiveId} />
+            ) : (
+              <ActiveDocument />
+            )}
+          </Box>
+          <SelectionToolbar />
+        </AppShell.Main>
+
+        <AppShell.Aside p="sm">
+          <ScrollArea h="calc(100vh - 80px)" offsetScrollbars>
+            <Stack gap="lg">
+              <Box>
+                <Group gap="xs" mb="xs">
+                  <TableOfContents size={16} />
+                  <Title order={3}>目录</Title>
+                </Group>
+                <Stack gap={2}>
+                  {toc.length ? (
+                    toc.map((item) => (
+                      <Anchor
+                        className="toc-link"
+                        href={`#${item.id}`}
+                        key={item.id}
+                        pl={item.level === 3 ? "xl" : item.level === 2 ? "md" : "xs"}
+                        size="sm"
+                        underline="never"
+                      >
+                        {item.text}
+                      </Anchor>
+                    ))
+                  ) : (
+                    <Text c="dimmed" size="sm">
+                      {isDashboard ? "Open a document to view its TOC." : "No headings yet."}
+                    </Text>
+                  )}
+                </Stack>
+              </Box>
+
+              <Box>
+                <Group gap="xs" mb="xs">
+                  {theme === "ink" ? <Moon size={16} /> : <Sun size={16} />}
+                  <Title order={3}>当前文档</Title>
+                </Group>
+                <Text c="dimmed" size="sm">
+                  {activeDocument?.description ?? "Previewing current MDX document."}
+                </Text>
+                {activeDocument ? (
+                  <Badge mt="sm" variant="light">
+                    {activeDocument.group}
+                  </Badge>
+                ) : null}
+              </Box>
+            </Stack>
+          </ScrollArea>
+        </AppShell.Aside>
+      </AppShell>
     </Box>
   );
 }

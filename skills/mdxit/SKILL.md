@@ -324,9 +324,9 @@ export default function RiskMatrix({ items }) {
 ## 预览
 
 ```bash
-git clone https://github.com/charlzyx/mdxit.git && cd mdxit
-npm install && npm run build
-node dist/cli/index.js preview examples
+npm run dev                                          # dev server + HMR
+node dist/cli/index.js preview examples              # 预览目录
+node dist/cli/index.js preview docs/proposal.md      # 预览单文件
 ```
 
 测试交互：
