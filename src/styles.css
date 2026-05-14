@@ -209,19 +209,19 @@ pre,
 }
 
 .side-toggle-left {
-  left: 274px;
-}
-
-.side-toggle-left[data-open] {
   left: -16px;
 }
 
+.side-toggle-left[data-open] {
+  left: 274px;
+}
+
 .side-toggle-right {
-  right: 264px;
+  right: -16px;
 }
 
 .side-toggle-right[data-open] {
-  right: -16px;
+  right: 264px;
 }
 
 .document-tree-node {
