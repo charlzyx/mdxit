@@ -78,70 +78,29 @@ MDXIT_FILE=<path> npm run dev
 
 ## 写作原则
 
-1. 正文、列表、表格、引用、代码块、task list 都用标准 Markdown。
-2. 简单检查项用 `- [ ] item` / `- [x] item`。
-3. 组件只用于提升空间组织效率，不用于排版装饰。
-4. `<b>` 放标题，children 放正文，`<small>` 放补充信息。
-5. 用户用中文时，文档内容用中文。
+1. 正文、列表、表格、引用、代码块、task list 用标准 Markdown，组件只做空间组织。
+2. `<b>` = 标题，`<small>` = 补充信息，children = 正文。
+3. 状态用 `ok` / `warn` / `risk` 属性，对应绿/黄/红色调。
+4. `:::item` 之间不加空行，`:::` 与非 `:::` 内容之间加空行。
+5. 不改动原文事实，不添加原文没有的信息。
+6. 用户用中文时文档也用中文。
 
-## 增强语法
+## 语法速查
 
-提示块：
+详细语法、场景和组合示例见 `references/showcase.md`——**增强前必须先读**。
 
-```md
-> [!NOTE]
-> 普通说明
-
-> [!TIP]
-> 建议
-
-> [!OK]
-> 已确认/通过
-
-> [!WARNING]
-> 警告
-
-> [!DANGER]
-> 严重风险
-```
-
-Mermaid：
-
-````md
-```mermaid
-flowchart LR
-    A --> B --> C
-```
-````
-
-Diff：
-
-````md
-```diff
-- old code
-+ new code
-```
-````
-
-## 内置组件
-
-完整语法、使用场景和组合示例见 `references/showcase.md`——**增强文档前必须先读它**。
-
-速查：
-
-| 场景 | 组件 | 写法 |
+| 组件 | 写法 | 用途 |
 |------|------|------|
-| 决策/风险/指标卡 | `<Insight>` / `<Insights>` | `<Insight ok badge="通过">` |
-| 多栏对比 | `:::grid` / `:::item` | `:::grid 2` → `:::item ok badge="推荐"` |
-| 进度百分比 | `<ProgressBar>` | `<ProgressBar value={72} ok>` |
-| 阶段/时间线 | `<Steps>` / `<Step>` | `<Steps horizontal active={2}>` |
-| 视图切换 | `<Tabs>` / `<Tab>` | `<Tab label="方案 A">` |
-| 折叠详情 | `<Fold>` | `<Fold><b>标题</b>内容</Fold>` |
-| 文件树 | `<Tree>` + `<ul>/<li>` | `<li>file.ts <small>注释</small></li>` |
-| 收集审查意见 | `<AskQuestion>` | `<AskQuestion id="x" question="...">` |
-| 提示/警告 | `>[!TYPE]` | `>[!WARNING]` |
-| 流程图 | ` ```mermaid` | fenced code block |
-| 柱状/折线/饼图 | ` ```antv \| type` | JSON: `{data, x, y, type}` |
+| `:::grid 2` + `:::item ok` | directive 块 | 多栏对比、方案评估 |
+| `<Insight ok badge="..">` | `<b>`标题 + `<small>`副题 | 决策卡、风险卡、指标卡 |
+| `<ProgressBar value={72} ok>` | `<b>`标题 + 描述文本 | 进度百分比 |
+| `<Steps active={2}>` + `<Step>` | 水平或垂直步骤 | 阶段、时间线、里程碑 |
+| `<Tabs>` + `<Tab label="A">` | 每个 Tab 内放内容 | 多方案/多视图切换 |
+| `<Fold>` + `<b>`标题 | 折叠内容 | 详情、堆栈、长文本 |
+| `<Tree><ul><li>` + `<small>` | 原生列表语法 | 文件树、目录结构 |
+| `<AskQuestion id="x" question="..">` | 描述作为 children | 收集审查者反馈 |
+| `>[!NOTE\|TIP\|OK\|WARNING\|DANGER]` | blockquote | 提示、警告、状态 |
+| ` ```mermaid` / ` ```antv \| bar` | fenced code block | 流程图、柱状/折线/饼图 |
 
 ## 交互事件
 
