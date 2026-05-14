@@ -69,11 +69,15 @@ export function CodeBlock({ children, ...preProps }: { children?: ReactNode } & 
   if (language === "diff") return <DiffView code={code} />;
   if (language === "antv") {
     const codeProps = codeElement?.props as Record<string, unknown> | undefined;
+    // Meta can be in many places depending on rehype/MDX version
     const metaRaw = (
       codeProps?.meta ??
+      codeProps?.metastring ??
+      codeProps?.["data-meta"] ??
       preProps.meta ??
       preProps["data-meta"] ??
       preProps["metastring"] ??
+      preProps["data-language"] ??
       ""
     ) as string;
     const chartType = metaRaw.replace(/^\|\s*/, "") || "bar";

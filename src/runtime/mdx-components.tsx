@@ -27,8 +27,7 @@ import {
   Step,
   Steps,
   Tab,
-  Tabs,
-  Tree
+  Tabs
 } from "../components/ReviewPrimitives";
 import { CodeBlock } from "./CodeBlock";
 import { customComponents } from "./custom-components";
@@ -131,6 +130,5 @@ export const mdxComponents: MDXComponents = {
   Steps,
   Tab,
   Tabs,
-  Tree,
   ...customComponents
 };

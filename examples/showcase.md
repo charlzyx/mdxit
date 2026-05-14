@@ -154,75 +154,6 @@ description: MDXit 全部写法展示。showcase.md 是当前语法的唯一标�
 
 ---
 
-### Tree
-
-<Tree>
-  <ul>
-    <li>
-      src <small>源代码目录</small>
-      <ul>
-        <li>
-          components <small>可复用组件</small>
-          <ul>
-            <li>ReviewPrimitives.tsx <small>审查原语</small></li>
-            <li>Button.tsx <small>通用按钮</small></li>
-          </ul>
-        </li>
-        <li>
-          runtime <small>运行时核心</small>
-          <ul>
-            <li>mdx-components.tsx <small>MDX 组件注册</small></li>
-            <li>Workbench.tsx <small>三栏工作台</small></li>
-            <li>session.ts <small>会话事件</small></li>
-          </ul>
-        </li>
-        <li>main.tsx <small>入口</small></li>
-        <li>styles.css <small>全局样式</small></li>
-      </ul>
-    </li>
-    <li>package.json</li>
-    <li>tsconfig.json</li>
-    <li>vite.config.ts <small>构建配置</small></li>
-  </ul>
-</Tree>
-
-<Fold>
-  <b>源码</b>
-
-```mdx
-<Tree>
-  <ul>
-    <li>
-      src <small>源代码目录</small>
-      <ul>
-        <li>
-          components <small>可复用组件</small>
-          <ul>
-            <li>ReviewPrimitives.tsx <small>审查原语</small></li>
-            <li>Button.tsx <small>通用按钮</small></li>
-          </ul>
-        </li>
-        <li>
-          runtime <small>运行时核心</small>
-          <ul>
-            <li>mdx-components.tsx <small>MDX 组件注册</small></li>
-            <li>Workbench.tsx <small>三栏工作台</small></li>
-            <li>session.ts <small>会话事件</small></li>
-          </ul>
-        </li>
-        <li>main.tsx <small>入口</small></li>
-        <li>styles.css <small>全局样式</small></li>
-      </ul>
-    </li>
-    <li>package.json</li>
-    <li>tsconfig.json</li>
-    <li>vite.config.ts <small>构建配置</small></li>
-  </ul>
-</Tree>
-```
-
-</Fold>
-
 ---
 
 ## 轻交互
@@ -474,6 +405,7 @@ description: MDXit 全部写法展示。showcase.md 是当前语法的唯一标�
 
 ```antv | bar
 {
+  "type": "bar",
   "data": [
     { "month": "1月", "value": 28 },
     { "month": "2月", "value": 55 },
@@ -492,6 +424,7 @@ description: MDXit 全部写法展示。showcase.md 是当前语法的唯一标�
 
 ```antv | line
 {
+  "type": "line",
   "data": [
     { "time": "10:00", "p99": 145, "avg": 88 },
     { "time": "11:00", "p99": 152, "avg": 91 },
@@ -516,6 +449,7 @@ description: MDXit 全部写法展示。showcase.md 是当前语法的唯一标�
 
 ```antv | bar
 {
+  "type": "bar",
   "data": [
     { "month": "1月", "value": 28 },
     { "month": "2月", "value": 55 },
@@ -534,6 +468,7 @@ description: MDXit 全部写法展示。showcase.md 是当前语法的唯一标�
 
 ```antv | line
 {
+  "type": "line",
   "data": [
     { "time": "10:00", "p99": 145, "avg": 88 },
     { "time": "11:00", "p99": 152, "avg": 91 },
