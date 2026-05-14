@@ -11,7 +11,7 @@
     "src",
     "index.html",
     "vite.config.ts",
-    "examples/showcase.md"
+    "skills/mdxit/references/showcase.md"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",

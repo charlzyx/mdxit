@@ -1,6 +1,6 @@
 ---
 name: mdxit
-description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划、决策记录、审查报告，或需要人工审查/交互预览的 agent 文档产物时使用。Markdown 优先，语义组件只用于提升信息密度；语法标准以 examples/showcase.md 为准。
+description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划、决策记录、审查报告，或需要人工审查/交互预览的 agent 文档产物时使用。Markdown 优先，语义组件只用于提升信息密度；语法标准以 references/showcase.md 为准。
 ---
 
 # MDXit
@@ -132,148 +132,23 @@ Diff：
 
 ## 内置组件
 
-### Insight / Insights
+完整语法、使用场景和组合示例见 `references/showcase.md`——**增强文档前必须先读它**。
 
-决策、风险、摘要、指标卡。`metric` 属性切换为大字数值模式。
+速查：
 
-```mdx
-<Insights columns={3}>
-  <Insight ok><b>认证</b>JWT 方案</Insight>
-  <Insight risk><b>迁移</b>1.2 亿条记录</Insight>
-  <Insight metric warn><b>错误率</b><small>超时为主</small>0.12%</Insight>
-</Insights>
-```
-
-### Grid / GridItem
-
-多栏对比布局。优先用 directive 写法：
-
-```md
-:::grid 2
-:::item ok badge="推荐"
-<b>模块化单体</b>
-部署简单，适合当前团队规模。
-:::
-:::item warn badge="备选"
-<b>微服务拆分</b>
-治理能力更强，复杂度更高。
-:::
-:::
-```
-
-directive 写法不支持时，降级为 JSX：
-
-```mdx
-<Grid columns={2}>
-  <GridItem ok badge="推荐"><b>模块化单体</b></GridItem>
-  <GridItem warn badge="备选"><b>微服务拆分</b></GridItem>
-</Grid>
-```
-
-### ProgressBar
-
-```mdx
-<ProgressBar value={72} ok>
-  <b>整体完成度</b>
-  18 / 25 个任务已完成
-</ProgressBar>
-```
-
-### Steps / Step
-
-垂直时间线或水平步骤条。
-
-```mdx
-<Steps horizontal active={2}>
-  <Step><b>需求</b>已完成</Step>
-  <Step><b>开发</b>进行中</Step>
-  <Step><b>测试</b>待开始</Step>
-</Steps>
-```
-
-### Tabs / Tab
-
-同一材料的多视图切换。
-
-```mdx
-<Tabs>
-  <Tab label="方案 A">
-  **微服务**：独立部署，延迟增加。
-  </Tab>
-  <Tab label="方案 B">
-  **模块化单体**：部署简单，网络开销低。
-  </Tab>
-</Tabs>
-```
-
-### Fold
-
-折叠详情。
-
-```mdx
-<Fold>
-  <b>点击展开详情</b>
-  折叠内容，支持 Markdown。
-</Fold>
-```
-
-### Tree
-
-文件树，用原生 `<ul>` / `<li>` 表达层级，`<small>` 添加注释。
-
-```mdx
-<Tree>
-  <ul>
-    <li>
-      src <small>源代码</small>
-      <ul>
-        <li>index.ts <small>入口</small></li>
-        <li>
-          components <small>组件</small>
-          <ul>
-            <li>Button.tsx</li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-  </ul>
-</Tree>
-```
-
-### AskQuestion
-
-向用户收集回答，写入 `.mdxit/session/events.jsonl`。
-只在用户明确需要交互预览时使用。
-
-```mdx
-<AskQuestion id="release-risk" question="这个发布风险是否可以接受？">
-当前方案还缺少 mock 网关重跑结果。
-</AskQuestion>
-```
-
-### Admonition / Mermaid
-
-组件形式的提示块和图表。一般优先用 blockquote 提示块和 fenced mermaid。
-
-### AntV 图表
-
-简单的柱状图、折线图、饼图、面积图、散点图。语法为 ` ```antv | 类型 `，内容为 JSON 配置：
-
-````md
-```antv | bar
-{
-  "data": [
-    { "month": "1月", "value": 28 },
-    { "month": "2月", "value": 55 }
-  ],
-  "x": "month",
-  "y": "value"
-}
-```
-````
-
-支持类型：`bar`、`line`、`area`、`pie`、`scatter`。
-JSON 字段：`data`（必需）、`x`、`y`、`color`、`width`、`height`。`x`/`y` 缺省时取 data 第一/第二个字段。
+| 场景 | 组件 | 写法 |
+|------|------|------|
+| 决策/风险/指标卡 | `<Insight>` / `<Insights>` | `<Insight ok badge="通过">` |
+| 多栏对比 | `:::grid` / `:::item` | `:::grid 2` → `:::item ok badge="推荐"` |
+| 进度百分比 | `<ProgressBar>` | `<ProgressBar value={72} ok>` |
+| 阶段/时间线 | `<Steps>` / `<Step>` | `<Steps horizontal active={2}>` |
+| 视图切换 | `<Tabs>` / `<Tab>` | `<Tab label="方案 A">` |
+| 折叠详情 | `<Fold>` | `<Fold><b>标题</b>内容</Fold>` |
+| 文件树 | `<Tree>` + `<ul>/<li>` | `<li>file.ts <small>注释</small></li>` |
+| 收集审查意见 | `<AskQuestion>` | `<AskQuestion id="x" question="...">` |
+| 提示/警告 | `>[!TYPE]` | `>[!WARNING]` |
+| 流程图 | ` ```mermaid` | fenced code block |
+| 柱状/折线/饼图 | ` ```antv \| type` | JSON: `{data, x, y, type}` |
 
 ## 交互事件
 

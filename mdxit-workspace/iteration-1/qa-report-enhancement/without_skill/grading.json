@@ -1,1 +1,0 @@
-{"expectations":[{"text":"使用 MDXit <Insight metric> 展示指标","passed":false,"evidence":"使用标准 Markdown 表格展示指标"},{"text":"使用 MDXit <ProgressBar>","passed":false,"evidence":"使用表格显示数值"},{"text":"使用 MDXit Grid 布局","passed":false,"evidence":"使用标准段落+编号列表"},{"text":"保持原文事实不变","passed":true,"evidence":"所有数据保留，增加了目标对比列"}]}

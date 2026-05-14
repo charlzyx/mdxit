@@ -43,11 +43,11 @@ function collectMdxFiles(directory: string): string[] {
 }
 
 function getTarget() {
-  const targetPath = resolve(process.env.MDXIT_FILE ?? "examples");
+  const targetPath = resolve(process.env.MDXIT_FILE ?? "skills/mdxit/references");
   const exists = existsSync(targetPath);
   const isDirectory = exists && statSync(targetPath).isDirectory();
   const fallbackDocument = isDirectory
-    ? findFirstMdx(targetPath) ?? resolve("examples/showcase.md")
+    ? findFirstMdx(targetPath) ?? resolve("skills/mdxit/references/showcase.md")
     : targetPath;
 
   return { targetPath, fallbackDocument, isDirectory };

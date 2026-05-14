@@ -1,1 +1,0 @@
-{"expectations":[{"text":"使用 :::grid 或 <Grid> 进行方案对比","passed":false,"evidence":"使用表格对比，非MDXit Grid组件"},{"text":"使用 <Insight> 展示风险评估","passed":false,"evidence":"使用表格展示风险"},{"text":"使用 <ProgressBar> 展示进度","passed":false,"evidence":"使用元信息表格+checkbox展示进度"},{"text":"保持原文事实不变","passed":true,"evidence":"所有关键事实保留"}]}

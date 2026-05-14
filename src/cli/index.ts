@@ -20,8 +20,7 @@ Usage:
   mdxit init [file.md]         Copy the showcase-based starter document
 
 Examples:
-  mdxit preview examples/showcase.md
-  mdxit preview examples
+  mdxit preview skills/mdxit/references/showcase.md
   mdxit init docs/proposal.review.md
 `);
 }
@@ -33,7 +32,7 @@ async function init(target = "review.md") {
   }
 
   await mkdir(dirname(targetPath), { recursive: true });
-  await cp(resolve(rootDir, "examples/showcase.md"), targetPath);
+  await cp(resolve(rootDir, "skills/mdxit/references/showcase.md"), targetPath);
   console.log(`Created ${target}`);
 }
 
