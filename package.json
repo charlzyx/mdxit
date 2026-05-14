@@ -15,9 +15,9 @@
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "preview:example": "vite --host 127.0.0.1",
-    "preview": "node dist/cli/index.js preview",
     "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.cli.json && vite build",
+    "serve": "vite preview --host 127.0.0.1",
+    "preview": "node dist/cli/index.js preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build"
   },
