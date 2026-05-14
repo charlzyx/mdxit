@@ -179,18 +179,17 @@ directive 写法不支持时，降级为 JSX：
 
 ### Tree
 
-文件树，用原生 `<ul>` / `<li>` 表达层级。
+文件树，用原生 `<ul>` / `<li>` 表达层级，`<small>` 添加注释。
 
 ```mdx
 <Tree>
   <ul>
     <li>
-      src
+      src <small>源代码</small>
       <ul>
-        <li>index.ts</li>
-        <li>app.tsx</li>
+        <li>index.ts <small>入口</small></li>
         <li>
-          components
+          components <small>组件</small>
           <ul>
             <li>Button.tsx</li>
           </ul>
