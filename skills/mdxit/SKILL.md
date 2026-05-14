@@ -9,21 +9,33 @@ description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划
 
 ## 安装
 
-**推荐方式（skills CLI）：**
+分两步：安装 skill（agent 知道怎么写 MDXit），安装运行时（预览渲染文档）。
+
+### 1. 安装 Skill
 
 ```bash
 npx skills add charlzyx/mdxit
 ```
 
-**手动方式（git clone + npm）：**
+`npx skills list` 确认 `mdxit` 出现在列表中。
+
+### 2. 安装运行时（MDXit 项目本身）
 
 ```bash
 git clone https://github.com/charlzyx/mdxit.git && cd mdxit
 npm install && npm run build
-node dist/cli/index.js preview examples
 ```
 
-安装完成后，在 Claude Code 中输入 `npx skills list` 确认 `mdxit` 出现在项目 skill 列表中。
+预览文档：
+
+```bash
+node dist/cli/index.js preview examples          # 预览 examples 目录
+node dist/cli/index.js preview docs/             # 预览指定目录
+node dist/cli/index.js preview docs/proposal.md  # 预览单文件
+node dist/cli/index.js init docs/my-review.md    # 创建新文档
+```
+
+常用：`npm run dev` 启动 Vite dev server，HMR 实时刷新。
 
 ## 先判断
 

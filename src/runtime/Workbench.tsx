@@ -32,7 +32,8 @@ import {
   Palette,
   Sun,
   Check,
-  TableOfContents
+  TableOfContents,
+  ArrowBigLeft
 } from "lucide-react";
 import { ComponentType, useEffect, useMemo, useState } from "react";
 import { documents, type MdxitDocument } from "./document-registry";
@@ -126,15 +127,14 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   return (
     <Box>
       <Tooltip label={navOpened ? "收起侧栏" : "展开侧栏"}>
-        <ActionIcon
+        <ArrowBigLeft
           aria-label="Toggle sidebar"
           className="side-toggle side-toggle-left"
           data-open={navOpened || undefined}
           onClick={nav.toggle}
-          variant="subtle"
         >
           {navOpened ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </ActionIcon>
+        </ArrowBigLeft>
       </Tooltip>
       <Tooltip label={asideOpened ? "收起目录" : "展开目录"}>
         <ActionIcon

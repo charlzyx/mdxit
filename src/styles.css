@@ -343,7 +343,7 @@ pre,
   border: none;
   border-left: 3px solid var(--accent);
   border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
-  padding: 8px 12px;
+  padding: 5px 10px;
   background: var(--alert-bg);
   color: var(--text);
   box-shadow: none;
@@ -354,10 +354,10 @@ pre,
 }
 
 .review-alert-icon {
-  width: 18px;
-  height: 18px;
-  margin-inline-end: 10px;
-  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 8px;
+  margin-top: 0;
   color: var(--alert-color);
 }
 

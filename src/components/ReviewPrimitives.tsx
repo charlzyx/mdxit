@@ -52,11 +52,11 @@ function toneColor(tone: Tone) {
 }
 
 function admonitionIcon(type: AdmonitionType) {
-  if (type === "tip") return <Lightbulb size={16} />;
-  if (type === "ok") return <CheckIcon size={16} />;
-  if (type === "danger") return <ShieldAlert size={16} />;
-  if (type === "warning") return <AlertTriangle size={16} />;
-  return <Info size={16} />;
+  if (type === "tip") return <Lightbulb size={14} />;
+  if (type === "ok") return <CheckIcon size={14} />;
+  if (type === "danger") return <ShieldAlert size={14} />;
+  if (type === "warning") return <AlertTriangle size={14} />;
+  return <Info size={14} />;
 }
 
 function admonitionCssType(type: AdmonitionType) {
@@ -72,30 +72,21 @@ function matchTag(el: unknown, tagName: string): boolean {
   return t === tagName || (typeof t === "function" && ((t as { displayName?: string }).displayName === tagName || (t as { name?: string }).name === tagName));
 }
 
-function extractTag(children: ReactNode, tagName: string): { found: ReactNode | null; rest: ReactNode[] } {
-  const arr = Children.toArray(children);
-  const idx = arr.findIndex((c) => {
-    if (matchTag(c, tagName)) return true;
-    // MDX wraps inline elements in <p> in markdown mode
+function flattenP(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).flatMap((c) => {
     if (isValidElement(c) && (c as React.ReactElement).type === "p") {
-      const inner = Children.toArray((c as React.ReactElement<{ children?: ReactNode }>).props.children);
-      return inner.some((ic) => matchTag(ic, tagName));
+      return flattenP((c as React.ReactElement<{ children?: ReactNode }>).props.children);
     }
-    return false;
+    return [c];
   });
+}
+
+function extractTag(children: ReactNode, tagName: string): { found: ReactNode | null; rest: ReactNode[] } {
+  const arr = flattenP(children);
+  const idx = arr.findIndex((c) => matchTag(c, tagName));
   if (idx === -1) return { found: null, rest: arr };
-  const c = arr[idx] as React.ReactElement<{ children?: ReactNode }>;
-  if (matchTag(c, tagName)) {
-    return {
-      found: c.props.children,
-      rest: arr.filter((_, i) => i !== idx)
-    };
-  }
-  // Extract from inside <p> wrapper
-  const inner = Children.toArray(c.props.children);
-  const innerMatch = inner.find((ic) => matchTag(ic, tagName));
   return {
-    found: innerMatch ? (innerMatch as React.ReactElement<{ children?: ReactNode }>).props.children : null,
+    found: (arr[idx] as React.ReactElement<{ children?: ReactNode }>).props.children,
     rest: arr.filter((_, i) => i !== idx)
   };
 }
