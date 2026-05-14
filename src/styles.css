@@ -213,8 +213,7 @@ pre,
 }
 
 .side-toggle-left[data-open] {
-  left: 290px;
-  transform: translateX(-50%);
+  left: 274px;
 }
 
 .side-toggle-right {
@@ -222,8 +221,7 @@ pre,
 }
 
 .side-toggle-right[data-open] {
-  right: 280px;
-  transform: translateX(50%);
+  right: 264px;
 }
 
 .document-tree-node {

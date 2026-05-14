@@ -210,7 +210,6 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
           <Stack gap="sm">
             <ScrollArea h="calc(100vh - 130px)" offsetScrollbars>
               <Tree
-                mt={"xs"}
                 className="document-tree"
                 data={treeData}
                 expandOnClick
@@ -255,7 +254,7 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
           <ScrollArea h="calc(100vh - 80px)" offsetScrollbars>
             <Stack gap="lg">
               <Box>
-                <Group gap="xs" mb="xs" mt="xl" >
+                <Group gap="xs" mb="xs">
                   <TableOfContents size={14} />
                   <Title order={3}>目录</Title>
                 </Group>
