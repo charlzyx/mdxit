@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 set -e
+# MDXit runtime setup — run once after npx skills add charlzyx/mdxit
+# Usage: bash .agents/skills/mdxit/scripts/setup.sh
 
-# MDXit runtime setup — run once after installing the skill.
-# Usage: bash skills/mdxit/scripts/setup.sh
-
-ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-
-if [ ! -f "$ROOT/package.json" ]; then
-  echo "Error: not in MDXit project root. Run this from the cloned mdxit repo."
-  exit 1
-fi
+RUNTIME="$(cd "$(dirname "$0")/../runtime" && pwd)"
 
 echo "==> Installing dependencies..."
-cd "$ROOT"
+cd "$RUNTIME"
 npm install
 
 echo "==> Building..."
@@ -20,8 +14,6 @@ npm run build
 
 echo ""
 echo "Done. Preview with:"
-echo "  node dist/cli/index.js preview examples"
-echo "  node dist/cli/index.js preview docs/"
-echo ""
-echo "Or dev mode with HMR:"
+echo "  cd $RUNTIME"
+echo "  node dist/cli/index.js preview <file-or-dir>"
 echo "  npm run dev"

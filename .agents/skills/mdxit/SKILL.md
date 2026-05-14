@@ -9,33 +9,26 @@ description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划
 
 ## 安装
 
-分两步：安装 skill（agent 知道怎么写 MDXit），安装运行时（预览渲染文档）。
-
-### 1. 安装 Skill
+Skill 自带运行时，无需额外 clone。
 
 ```bash
 npx skills add charlzyx/mdxit
-```
-
-`npx skills list` 确认 `mdxit` 出现在列表中。
-
-### 2. 安装运行时（MDXit 项目本身）
-
-```bash
-git clone https://github.com/charlzyx/mdxit.git && cd mdxit
+cd .agents/skills/mdxit/runtime
 npm install && npm run build
 ```
 
 预览文档：
 
 ```bash
-node dist/cli/index.js preview examples          # 预览 examples 目录
-node dist/cli/index.js preview docs/             # 预览指定目录
-node dist/cli/index.js preview docs/proposal.md  # 预览单文件
-node dist/cli/index.js init docs/my-review.md    # 创建新文档
+node dist/cli/index.js preview <file-or-dir>
+npm run dev                    # dev server + HMR
 ```
 
-常用：`npm run dev` 启动 Vite dev server，HMR 实时刷新。
+或运行 setup 脚本一键完成：
+
+```bash
+bash .agents/skills/mdxit/scripts/setup.sh
+```
 
 ## /mdxit 命令
 

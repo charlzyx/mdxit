@@ -1,0 +1,47 @@
+{
+  "name": "mdxit",
+  "version": "0.1.0",
+  "description": "用语义组件提升 Markdown 的信息密度，不变成 HTML。",
+  "type": "module",
+  "bin": {
+    "mdxit": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist/cli",
+    "src",
+    "index.html",
+    "vite.config.ts",
+    "skills/mdxit/references/showcase.md"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.cli.json && vite build",
+    "serve": "vite preview --host 127.0.0.1",
+    "preview": "node dist/cli/index.js preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@antv/f2": "^5.14.0",
+    "@mantine/core": "^9.2.0",
+    "@mantine/hooks": "^9.2.0",
+    "@mdx-js/react": "latest",
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "mermaid": "^11.15.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx-frontmatter": "^5.2.0",
+    "shiki": "^4.0.2",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@mdx-js/rollup": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest"
+  }
+}
