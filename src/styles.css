@@ -195,6 +195,7 @@ pre,
   transition:
     left 180ms ease,
     right 180ms ease,
+    transform 180ms ease,
     color 140ms ease,
     background 140ms ease,
     border-color 140ms ease,
@@ -213,7 +214,8 @@ pre,
 }
 
 .side-toggle-left[data-open] {
-  left: 274px;
+  left: 290px;
+  transform: translateX(-50%);
 }
 
 .side-toggle-right {
@@ -221,7 +223,8 @@ pre,
 }
 
 .side-toggle-right[data-open] {
-  right: 264px;
+  right: 280px;
+  transform: translateX(50%);
 }
 
 .document-tree-node {
