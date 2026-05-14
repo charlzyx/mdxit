@@ -179,76 +179,51 @@ pre,
 
 .side-toggle {
   position: fixed;
-  top: 68px;
+  top: 120px;
   z-index: 200;
-  width: 28px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
   cursor: pointer;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--border-strong) 30%, transparent);
   transition:
     left 180ms ease,
     right 180ms ease,
-    color 140ms ease;
+    color 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .side-toggle:hover {
-  color: var(--accent-strong);
-  background: transparent;
-  box-shadow: none;
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .side-toggle-left {
-  left: 0;
-  border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
+  left: -16px;
 }
 
 .side-toggle-left[data-open] {
   left: 290px;
-  transform: translateX(-100%);
-  border-radius: var(--radius, 6px) 0 0 var(--radius, 6px);
-  background: var(--panel);
-  box-shadow: -1px 0 0 0 var(--border), 0 1px 0 0 var(--border), 0 -1px 0 0 var(--border);
+  transform: translateX(-50%);
 }
 
 .side-toggle-right {
-  right: 0;
-  border-radius: var(--radius, 6px) 0 0 var(--radius, 6px);
+  right: -16px;
 }
 
 .side-toggle-right[data-open] {
   right: 280px;
-  transform: translateX(100%);
-  border-radius: 0 var(--radius, 6px) var(--radius, 6px) 0;
-  background: var(--panel);
-  box-shadow: 1px 0 0 0 var(--border), 0 1px 0 0 var(--border), 0 -1px 0 0 var(--border);
-}
-
-@media (max-width: 48em) {
-  .side-toggle-left[data-open] {
-    left: min(290px, 82vw);
-  }
-
-  .side-toggle-right[data-open] {
-    right: min(280px, 82vw);
-  }
-}
-
-/* TOC: match tree font style */
-
-.mantine-AppShell-aside .mantine-Button-root {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.mantine-AppShell-aside .mantine-Button-root:hover {
-  color: var(--accent-strong);
+  transform: translateX(50%);
 }
 
 .document-tree-node {
@@ -339,6 +314,10 @@ pre,
 .markdown-hr {
   margin-top: 18px;
   margin-bottom: 18px;
+}
+
+.mdxit-block.mantine-Blockquote-root {
+  padding: 10px 14px;
 }
 
 .review-alert {

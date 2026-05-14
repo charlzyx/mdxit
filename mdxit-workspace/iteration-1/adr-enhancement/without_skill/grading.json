@@ -1,0 +1,1 @@
+{"expectations":[{"text":"使用 MDXit Grid 进行方案对比","passed":false,"evidence":"使用标准 Markdown 7维表格对比"},{"text":"使用 MDXit Steps 展示后续动作","passed":false,"evidence":"使用 checkbox task list"},{"text":"保持原文事实不变","passed":true,"evidence":"所有方案描述和决策理由保留"},{"text":"信息组织清晰","passed":true,"evidence":"结构化良好，增加了维度对比、未选方案说明"}]}

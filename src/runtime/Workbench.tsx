@@ -208,15 +208,9 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
 
         <AppShell.Navbar p="sm">
           <Stack gap="sm">
-            <TextInput
-              leftSection={<Search size={15} />}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Filter documents"
-              size="sm"
-              value={query}
-            />
             <ScrollArea h="calc(100vh - 130px)" offsetScrollbars>
               <Tree
+                mt={"xs"}
                 className="document-tree"
                 data={treeData}
                 expandOnClick
@@ -261,8 +255,8 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
           <ScrollArea h="calc(100vh - 80px)" offsetScrollbars>
             <Stack gap="lg">
               <Box>
-                <Group gap="xs" mb="xs">
-                  <TableOfContents size={16} />
+                <Group gap="xs" mb="xs" mt="xl" >
+                  <TableOfContents size={14} />
                   <Title order={3}>目录</Title>
                 </Group>
                 <Stack gap={2}>
@@ -289,7 +283,7 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
 
               <Box>
                 <Group gap="xs" mb="xs">
-                  {theme === "ink" ? <Moon size={16} /> : <Sun size={16} />}
+                  {theme === "ink" ? <Moon size={14} /> : <Sun size={14} />}
                   <Title order={3}>当前文档</Title>
                 </Group>
                 <Text c="dimmed" size="sm">

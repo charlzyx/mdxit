@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "mdxit": {
+      "source": "charlzyx/mdxit",
+      "sourceType": "github",
+      "skillPath": "skills/mdxit/SKILL.md",
+      "computedHash": "c5714fe7470ad35bb10761662d8d2ef2887411cf8ebe1763920dc8ec4c4caf59"
+    }
+  }
+}

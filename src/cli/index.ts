@@ -191,11 +191,9 @@ async function preview(target = "examples", args: string[] = []) {
   console.log(`WS: ${session.url}`);
   console.log(`Events: ${session.eventsFile}`);
 
-  const localRequire = createRequire(import.meta.url);
-  const viteBin = localRequire.resolve("vite/bin/vite.js");
   const child = spawn(
-    process.execPath,
-    [viteBin, "--host", "127.0.0.1", ...args],
+    "npx",
+    ["vite", "--host", "127.0.0.1", ...args],
     {
       cwd: rootDir,
       env: {
