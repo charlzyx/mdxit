@@ -37,6 +37,16 @@ node dist/cli/index.js init docs/my-review.md    # 创建新文档
 
 常用：`npm run dev` 启动 Vite dev server，HMR 实时刷新。
 
+## /mdxit 命令
+
+用户输入 `/mdxit <path>` 时，将 `<path>` 作为要预览的 MD/MDX 文件或文件夹：
+
+```bash
+MDXIT_FILE=<path> npm run dev
+```
+
+路径可以是文件或目录。默认预览该路径下的所有 `.md` / `.mdx` 文件，自动生成导航树。
+
 ## 先判断
 
 使用 MDXit：
