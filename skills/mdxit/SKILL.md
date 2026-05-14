@@ -7,6 +7,24 @@ description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划
 
 用语义组件提升 Markdown 的信息密度，不变成 HTML。普通 Markdown 能表达的内容不要改写成组件。
 
+## 安装
+
+**推荐方式（skills CLI）：**
+
+```bash
+npx skills add charlzyx/mdxit
+```
+
+**手动方式（git clone + npm）：**
+
+```bash
+git clone https://github.com/charlzyx/mdxit.git && cd mdxit
+npm install && npm run build
+node dist/cli/index.js preview examples
+```
+
+安装完成后，在 Claude Code 中输入 `npx skills list` 确认 `mdxit` 出现在项目 skill 列表中。
+
 ## 先判断
 
 使用 MDXit：
