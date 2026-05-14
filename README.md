@@ -24,13 +24,33 @@ Markdown 文本优势（diff、grep、编辑）
 
 不替代 Markdown，不变成 HTML。在文本上面加一层空间组织。
 
-## 快速开始
+## 安装
+
+### 1. 安装 Skill（给 agent 用）
 
 ```bash
-npm install
-npm run dev
-npm run build
-node dist/cli/index.js preview examples
+npx skills add charlzyx/mdxit
+```
+
+### 2. 安装运行时（渲染预览需要）
+
+```bash
+git clone https://github.com/charlzyx/mdxit.git && cd mdxit
+npm install && npm run build
+```
+
+或直接用项目里的 setup 脚本：
+
+```bash
+bash skills/mdxit/scripts/setup.sh
+```
+
+### 3. 预览
+
+```bash
+node dist/cli/index.js preview examples          # 预览目录
+node dist/cli/index.js preview docs/proposal.md  # 预览单文件
+npm run dev                                       # dev server + HMR
 ```
 
 `preview` 接受单个 `.md` / `.mdx` 文件或目录。

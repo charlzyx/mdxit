@@ -126,27 +126,24 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   return (
     <Box>
       <Tooltip label={navOpened ? "收起侧栏" : "展开侧栏"}>
-        <ActionIcon
-          style={{ border: 'none', background: 'none' }}
+        <Box
           aria-label="Toggle sidebar"
           className="side-toggle side-toggle-left"
           data-open={navOpened || undefined}
           onClick={nav.toggle}
-          variant="subtle"
         >
-          {navOpened ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
-        </ActionIcon>
+          {navOpened ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+        </Box>
       </Tooltip>
       <Tooltip label={asideOpened ? "收起目录" : "展开目录"}>
-        <ActionIcon
+        <Box
           aria-label="Toggle TOC"
           className="side-toggle side-toggle-right"
           data-open={asideOpened || undefined}
           onClick={aside.toggle}
-          variant="subtle"
         >
-          {asideOpened ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </ActionIcon>
+          {asideOpened ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </Box>
       </Tooltip>
       <AppShell
         aside={{

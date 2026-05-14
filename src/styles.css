@@ -183,12 +183,14 @@ pre,
   z-index: 200;
   width: 28px;
   height: 42px;
-  border: 0;
-  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   transition:
     left 180ms ease,
     right 180ms ease,
@@ -197,6 +199,8 @@ pre,
 
 .side-toggle:hover {
   color: var(--accent-strong);
+  background: transparent;
+  box-shadow: none;
 }
 
 .side-toggle-left {
