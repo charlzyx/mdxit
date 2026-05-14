@@ -193,8 +193,6 @@ pre,
   border: 1px solid var(--border);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--border-strong) 30%, transparent);
   transition:
-    left 180ms ease,
-    right 180ms ease,
     transform 180ms ease,
     color 140ms ease,
     background 140ms ease,
@@ -211,18 +209,22 @@ pre,
 
 .side-toggle-left {
   left: 4px;
+  transform: translateX(0);
 }
 
 .side-toggle-left[data-open] {
-  left: 273px;
+  left: 4px;
+  transform: translateX(252px);
 }
 
 .side-toggle-right {
   right: 4px;
+  transform: translateX(0);
 }
 
 .side-toggle-right[data-open] {
-  right: 263px;
+  right: 4px;
+  transform: translateX(-240px);
 }
 
 .document-tree-node {
