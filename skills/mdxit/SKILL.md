@@ -62,6 +62,33 @@ MDXIT_FILE=<path> npm run dev
 5. 不改动原文事实，不添加原文没有的信息。
 6. 用户用中文时文档也用中文。
 
+## MDX 结构安全规则
+
+MDX 组件标签会被 Markdown 列表缩进规则影响。生成或改写 `.md` / `.mdx` 时必须遵守：
+
+1. 块级 XML 组件标签必须从行首开始，不要为了嵌套美观缩进。适用于 `<Tabs>`、`<Tab>`、`<Grid>`、`<Insight>`、`<Fold>`、`<Steps>`、`<Step>`、`<Tree>`、`<AskQuestion>` 等块级标签。
+2. 如果组件内容以列表、表格、引用或代码块结束，闭合标签前后都保留一个空行，并且闭合标签仍然顶格写。
+3. 不要把块级组件放进 Markdown 列表项里。需要在 Tab/Grid 中表达列表时，把列表写在组件内部，组件标签顶格。
+4. 写完后自检：不存在形如 `  </Tab>`、`  <Tab ...>` 的缩进块级标签；否则 MDX 可能报 `Expected the closing tag ... after the end of listItem`。
+
+Tabs 推荐写法：
+
+```mdx
+<Tabs>
+<Tab label="方案 A">
+
+- 第一条
+- 第二条
+
+</Tab>
+<Tab label="方案 B">
+
+正文或列表。
+
+</Tab>
+</Tabs>
+```
+
 ## 语法速查
 
 详细语法、场景和组合示例见 `references/showcase.md`——**增强前必须先读**。
