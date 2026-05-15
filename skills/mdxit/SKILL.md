@@ -13,7 +13,7 @@ Skill 自带运行时，无需额外 clone。
 
 ```bash
 npx skills add charlzyx/mdxit
-cd .agents/skills/mdxit/runtime
+cd skills/mdxit/runtime
 npm install && npm run build
 ```
 
@@ -27,7 +27,7 @@ npm run dev                    # dev server + HMR
 或运行 setup 脚本一键完成：
 
 ```bash
-bash .agents/skills/mdxit/scripts/setup.sh
+bash skills/mdxit/scripts/setup.sh
 ```
 
 ## /mdxit 命令
@@ -65,7 +65,7 @@ MDXIT_FILE=<path> npm run dev
 3. **询问选择**：用户未明确时，先列出两种模式让用户选。**默认推荐复制方式**。
 
 无论哪种模式，只做以下增强：
-- 多段对比 → `:::grid` / `<Grid>`
+- 多段对比 → `<Grid>` / `[!Grid 2]`
 - 指标数字 → `<Insight metric>`
 - 进度/阶段 → `<ProgressBar>` / `<Steps>`
 - 选项切换 → `<Tabs>`
@@ -81,7 +81,7 @@ MDXIT_FILE=<path> npm run dev
 1. 正文、列表、表格、引用、代码块、task list 用标准 Markdown，组件只做空间组织。
 2. `<b>` = 标题，`<small>` = 补充信息，children = 正文。
 3. 状态用 `ok` / `warn` / `risk` 属性，对应绿/黄/红色调。
-4. `:::item` 之间不加空行，`:::` 与非 `:::` 内容之间加空行。
+4. 块级增强使用独立标记行：`[!Steps]`、`[!Grid 2]`、`[!Table chart=bar]`。
 5. 不改动原文事实，不添加原文没有的信息。
 6. 用户用中文时文档也用中文。
 
@@ -91,7 +91,7 @@ MDXIT_FILE=<path> npm run dev
 
 | 组件 | 写法 | 用途 |
 |------|------|------|
-| `:::grid 2` + `:::item ok` | directive 块 | 多栏对比、方案评估 |
+| `[!Grid 2]` + 标准列表 / `<Grid>` | 块级标记或 XML 标签 | 多栏对比、方案评估 |
 | `<Insight ok badge="..">` | `<b>`标题 + `<small>`副题 | 决策卡、风险卡、指标卡 |
 | `<ProgressBar value={72} ok>` | `<b>`标题 + 描述文本 | 进度百分比 |
 | `<Steps active={2}>` + `<Step>` | 水平或垂直步骤 | 阶段、时间线、里程碑 |
@@ -100,7 +100,7 @@ MDXIT_FILE=<path> npm run dev
 | `<Tree><ul><li>` + `<small>` | 原生列表语法 | 文件树、目录结构 |
 | `<AskQuestion id="x" question="..">` | 描述作为 children | 收集审查者反馈 |
 | `>[!NOTE\|TIP\|OK\|WARNING\|DANGER]` | blockquote | 提示、警告、状态 |
-| ` ```mermaid` / ` ```antv \| bar` | fenced code block | 流程图、柱状/折线/饼图 |
+| ` ```mermaid` / ` ```chart \| bar` | fenced code block | 流程图、柱状/折线/饼图 |
 
 ## 交互事件
 

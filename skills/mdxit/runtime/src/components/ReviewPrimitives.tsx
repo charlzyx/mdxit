@@ -30,18 +30,40 @@ import {
   ShieldAlert
 } from "lucide-react";
 import mermaid from "mermaid";
-import { Children, isValidElement, ReactNode, useEffect, useId, useState } from "react";
+import { Children, createContext, isValidElement, ReactNode, useContext, useEffect, useId, useState } from "react";
 import { getActiveDocumentPath, sendMdxitEvent } from "../runtime/session";
+import { AntVChart } from "./AntVChart";
 
 type Tone = "neutral" | "ok" | "warn" | "risk";
 type AdmonitionType = "note" | "tip" | "ok" | "warning" | "danger";
 type ToneProps = { ok?: boolean; warn?: boolean; risk?: boolean };
+type SemanticRenderMode = "plain" | "steps" | "grid" | "table";
+type SemanticCalloutType = Exclude<SemanticRenderMode, "plain">;
+type SemanticRenderValue = { mode: SemanticRenderMode; options: Record<string, unknown> };
 
 function resolveTone(props: ToneProps): Tone {
   if (props.ok) return "ok";
   if (props.warn) return "warn";
   if (props.risk) return "risk";
   return "neutral";
+}
+
+const SemanticRenderContext = createContext<SemanticRenderValue>({ mode: "plain", options: {} });
+
+export function SemanticRenderScope({
+  mode,
+  options = {},
+  children
+}: {
+  mode: SemanticRenderMode;
+  options?: Record<string, unknown>;
+  children?: ReactNode;
+}) {
+  return <SemanticRenderContext.Provider value={{ mode, options }}>{children}</SemanticRenderContext.Provider>;
+}
+
+function useSemanticRender() {
+  return useContext(SemanticRenderContext);
 }
 
 function toneColor(tone: Tone) {
@@ -66,22 +88,23 @@ function admonitionCssType(type: AdmonitionType) {
   return "neutral";
 }
 
-function matchTag(el: unknown, tagName: string): boolean {
+function matchTag(el: unknown, tagName: string | string[]): boolean {
   if (!isValidElement(el)) return false;
+  const names = Array.isArray(tagName) ? tagName : [tagName];
   const t = (el as React.ReactElement).type;
-  return t === tagName || (typeof t === "function" && ((t as { displayName?: string }).displayName === tagName || (t as { name?: string }).name === tagName));
+  return names.some((name) => t === name || (typeof t === "function" && ((t as { displayName?: string }).displayName === name || (t as { name?: string }).name === name)));
 }
 
 function flattenP(children: ReactNode): ReactNode[] {
   return Children.toArray(children).flatMap((c) => {
-    if (isValidElement(c) && (c as React.ReactElement).type === "p") {
+    if (isValidElement(c) && matchTag(c, ["p", "MarkdownParagraph"])) {
       return flattenP((c as React.ReactElement<{ children?: ReactNode }>).props.children);
     }
     return [c];
   });
 }
 
-function extractTag(children: ReactNode, tagName: string): { found: ReactNode | null; rest: ReactNode[] } {
+function extractTag(children: ReactNode, tagName: string | string[]): { found: ReactNode | null; rest: ReactNode[] } {
   const arr = flattenP(children);
   const idx = arr.findIndex((c) => matchTag(c, tagName));
   if (idx === -1) return { found: null, rest: arr };
@@ -102,7 +125,7 @@ function extractChildProps<T>(children: ReactNode): T[] {
 export function Insight({ title, subtitle, badge, metric, children, ...toneProps }: {
   title?: string; subtitle?: string; badge?: string; metric?: boolean; children?: ReactNode;
 } & ToneProps) {
-  const { found: bTitle, rest: afterTitle } = extractTag(children, "b");
+  const { found: bTitle, rest: afterTitle } = extractTag(children, ["b", "strong"]);
   const { found: smSub, rest } = extractTag(afterTitle, "small");
   const finalTitle = title ?? bTitle;
   const finalSub = subtitle ?? smSub;
@@ -132,6 +155,26 @@ export function Insight({ title, subtitle, badge, metric, children, ...toneProps
       ) : null}
       <Box className="data-card-body">{rest}</Box>
     </MantineCard>
+  );
+}
+
+export function FeatureCard(props: React.ComponentProps<typeof Insight>) {
+  return (
+    <SemanticRenderScope mode="plain">
+      <Insight {...props} />
+    </SemanticRenderScope>
+  );
+}
+
+export function Checks({ children }: { children?: ReactNode }) {
+  return (
+    <SemanticRenderScope mode="plain">
+      <MantineCard className="mdxit-block checks-card" withBorder radius="md">
+        <List className="markdown-list task-list checks-list" listStyleType="none">
+          {children}
+        </List>
+      </MantineCard>
+    </SemanticRenderScope>
   );
 }
 
@@ -169,7 +212,7 @@ export function GridItem({
   badge?: string;
   children?: ReactNode;
 } & ToneProps) {
-  const { found: bTitle, rest: afterTitle } = extractTag(children, "b");
+  const { found: bTitle, rest: afterTitle } = extractTag(children, ["b", "strong"]);
   const finalTitle = title ?? bTitle;
   const tone = resolveTone(toneProps);
 
@@ -189,7 +232,7 @@ export function GridItem({
 // ---- ProgressBar ----
 
 export function ProgressBar({ label, value, children, ...toneProps }: { label?: string; value: number; children?: ReactNode } & ToneProps) {
-  const { found: bLabel, rest } = extractTag(children, "b");
+  const { found: bLabel, rest } = extractTag(children, ["b", "strong"]);
   const finalLabel = label ?? bLabel ?? "Progress";
   const tone = resolveTone(toneProps);
 
@@ -295,7 +338,7 @@ export function Tab(_props: { label?: string; children?: ReactNode }) {
 
 export function Tabs({ children }: { children?: ReactNode }) {
   const items = extractChildProps<{ label?: string; children?: ReactNode }>(children).map((item) => {
-    const { found: bLabel, rest } = extractTag(item.children, "b");
+    const { found: bLabel, rest } = extractTag(item.children, ["b", "strong"]);
     return { label: item.label ?? (typeof bLabel === "string" ? bLabel : "Tab"), children: item.label ? item.children : rest };
   });
   const defaultValue = items[0]?.label;
@@ -318,8 +361,12 @@ export function Step(_props: { title?: string; children?: ReactNode }) {
 
 export function Steps({ horizontal, active, children }: { horizontal?: boolean; active?: number; children?: ReactNode }) {
   const items = extractChildProps<{ title?: string; children?: ReactNode }>(children).map((item) => {
-    const { found: bTitle, rest } = extractTag(item.children, "b");
-    return { title: item.title ?? (typeof bTitle === "string" ? bTitle : "Step"), detail: item.title ? item.children : rest };
+    const { title, detail } = splitStepContent(item.children);
+    const stepTitle = normalizeStepTitle(item.title ?? title);
+    return {
+      title: stepTitle,
+      detail: item.title ? item.children : detail
+    };
   });
 
   if (horizontal) {
@@ -331,7 +378,7 @@ export function Steps({ horizontal, active, children }: { horizontal?: boolean; 
         classNames={{ separator: "review-stepper-separator", stepBody: "review-stepper-step-body", stepDescription: "review-stepper-step-description", stepIcon: "review-stepper-step-icon", stepLabel: "review-stepper-step-label" }}
         color="var(--accent)" iconSize={30} size="sm"
       >
-        {items.map((item) => <MantineStepper.Step key={item.title} label={item.title} description={item.detail ? <Text size="xs">{item.detail}</Text> : undefined} />)}
+        {items.map((item) => <MantineStepper.Step key={item.title} label={item.title} description={item.detail ? <Text component="div" size="xs">{item.detail}</Text> : undefined} />)}
       </MantineStepper>
     );
   }
@@ -340,11 +387,36 @@ export function Steps({ horizontal, active, children }: { horizontal?: boolean; 
     <Timeline active={items.length - 1} bulletSize={18} className="step-list" lineWidth={2}>
       {items.map((item, index) => (
         <Timeline.Item bullet={index + 1} key={item.title} title={item.title}>
-          {item.detail ? <Text c="dimmed" size="sm">{item.detail}</Text> : null}
+          {item.detail ? <Text c="dimmed" component="div" size="sm">{item.detail}</Text> : null}
         </Timeline.Item>
       ))}
     </Timeline>
   );
+}
+
+function normalizeStepTitle(value: ReactNode): string {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value).trim() || "Step";
+  }
+  return "Step";
+}
+
+function splitStepContent(children: ReactNode): { title?: ReactNode; detail: ReactNode[] } {
+  const { found: bTitle, rest } = extractTag(children, ["b", "strong"]);
+  if (bTitle) {
+    return { title: bTitle, detail: rest };
+  }
+
+  const arr = flattenP(children);
+  const firstTextIndex = arr.findIndex((child) => typeof child === "string" && child.trim().length > 0);
+  if (firstTextIndex !== -1) {
+    return {
+      title: arr[firstTextIndex],
+      detail: arr.filter((_, index) => index !== firstTextIndex)
+    };
+  }
+
+  return { detail: arr };
 }
 
 // ---- Admonition ----
@@ -363,7 +435,7 @@ export function Admonition({ type = "note", title, children }: { type?: Admoniti
 // ---- Fold ----
 
 export function Fold({ title, children, open }: { title?: string; children?: ReactNode; open?: boolean }) {
-  const { found: bTitle, rest } = extractTag(children, "b");
+  const { found: bTitle, rest } = extractTag(children, ["b", "strong"]);
   const finalTitle = title ?? (typeof bTitle === "string" ? bTitle : "Details");
   return (
     <MantineAccordion className="mdxit-block section-accordion" defaultValue={open ? finalTitle : undefined} variant="separated">
@@ -400,17 +472,56 @@ export function Mermaid({ chart }: { chart: string }) {
 // ---- Markdown overrides ----
 
 export function MarkdownTable({ children }: { children: ReactNode }) {
-  return <Table.ScrollContainer className="markdown-table" minWidth={560}><Table highlightOnHover striped withColumnBorders withTableBorder>{children}</Table></Table.ScrollContainer>;
+  const { mode, options } = useSemanticRender();
+  const table = <Table highlightOnHover striped withColumnBorders withTableBorder>{children}</Table>;
+  const chartType = typeof options.chart === "string" ? options.chart : "";
+
+  if (mode === "table" && chartType) {
+    const chartConfig = tableToAntVConfig(children, chartType);
+    if (chartConfig) {
+      return <AntVChart chartType={chartType} code={JSON.stringify(chartConfig)} />;
+    }
+  }
+
+  if (mode === "table") {
+    return (
+      <MantineCard className="mdxit-block table-card" withBorder radius="md" p="sm">
+        <Table.ScrollContainer className="markdown-table table-card-scroll" minWidth={560}>
+          {table}
+        </Table.ScrollContainer>
+      </MantineCard>
+    );
+  }
+
+  return <Table.ScrollContainer className="markdown-table" minWidth={560}>{table}</Table.ScrollContainer>;
 }
 export function MarkdownParagraph({ children }: { children: ReactNode }) {
   return <Text className="markdown-p" component="p">{children}</Text>;
 }
 export function MarkdownUl({ children }: { children: ReactNode }) {
+  const { mode, options } = useSemanticRender();
+  const items = extractChildProps<{ children?: ReactNode }>(children);
   const isTaskList = hasTaskItem(children);
+  const columns = typeof options.columns === "number" ? Number(options.columns) : 3;
+  if (isTaskList) {
+    return <Checks>{children}</Checks>;
+  }
+  if (mode === "grid") {
+    return (
+      <SimpleGrid className="mdxit-block grid-cards" cols={{ base: 1, sm: columns === 4 ? 2 : columns, lg: columns }} spacing="sm">
+        {items.map((item, index) => <FeatureCard key={index}>{item.children}</FeatureCard>)}
+      </SimpleGrid>
+    );
+  }
   return <List className={`markdown-list ${isTaskList ? "task-list" : ""}`} listStyleType={isTaskList ? "none" : undefined}>{children}</List>;
 }
 export function MarkdownOl({ children }: { children: ReactNode }) {
-  return <List className="markdown-list" type="ordered">{children}</List>;
+  const { mode } = useSemanticRender();
+  if (mode !== "steps") {
+    return <List className="markdown-list" type="ordered">{children}</List>;
+  }
+  const items = extractChildProps<{ children?: ReactNode }>(children);
+  return <Steps>{items.map((item, index) => <Step key={index}>{item.children}</Step>)}</Steps>;
 }
 export function MarkdownLi({ children }: { children: ReactNode }) {
   const parsed = parseTaskListItem(children);
@@ -446,6 +557,66 @@ export function MarkdownTbody({ children }: { children: ReactNode }) { return <T
 export function MarkdownTr({ children }: { children: ReactNode }) { return <Table.Tr>{children}</Table.Tr>; }
 export function MarkdownTh({ children }: { children: ReactNode }) { return <Table.Th>{children}</Table.Th>; }
 export function MarkdownTd({ children }: { children: ReactNode }) { return <Table.Td>{children}</Table.Td>; }
+
+export function SemanticCallout({ type, children, ...options }: { type: SemanticCalloutType; children?: ReactNode } & Record<string, unknown>) {
+  return <SemanticRenderScope mode={type} options={options}>{children}</SemanticRenderScope>;
+}
+
+function tableToAntVConfig(children: ReactNode, chartType: string) {
+  const rows = extractTableRows(children);
+  if (rows.length < 2) return null;
+
+  const headers = rows[0].map((cell) => cell || "value");
+  const data = rows.slice(1).map((row) =>
+    Object.fromEntries(headers.map((header, index) => [header, coerceTableValue(row[index] ?? "")]))
+  );
+  const x = headers[0];
+  const y = headers.find((header, index) => index > 0 && data.some((row) => typeof row[header] === "number")) ?? headers[1] ?? headers[0];
+
+  return {
+    type: chartType,
+    data,
+    x,
+    y
+  };
+}
+
+function extractTableRows(children: ReactNode): string[][] {
+  const rows: string[][] = [];
+
+  function walk(node: ReactNode) {
+    Children.toArray(node).forEach((child) => {
+      if (!isValidElement<{ children?: ReactNode }>(child)) return;
+      const element = child as React.ReactElement<{ children?: ReactNode }>;
+      const type = element.type;
+      if (type === "tr" || type === MarkdownTr) {
+        const cells = Children.toArray(element.props.children)
+          .filter(isValidElement)
+          .map((cell) => textFromNode((cell as React.ReactElement<{ children?: ReactNode }>).props.children));
+        if (cells.length) rows.push(cells);
+        return;
+      }
+      walk(element.props.children);
+    });
+  }
+
+  walk(children);
+  return rows;
+}
+
+function textFromNode(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(textFromNode).join("");
+  if (isValidElement<{ children?: ReactNode }>(node)) return textFromNode(node.props.children);
+  return "";
+}
+
+function coerceTableValue(value: string) {
+  const trimmed = value.trim();
+  const normalized = trimmed.replace(/,/g, "");
+  if (/^-?\d+(\.\d+)?$/.test(normalized)) return Number(normalized);
+  return trimmed;
+}
 
 // ---- Tree ----
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 # MDXit runtime setup — run once after npx skills add charlzyx/mdxit
-# Usage: bash .agents/skills/mdxit/scripts/setup.sh
+# Usage: bash skills/mdxit/scripts/setup.sh
 
 RUNTIME="$(cd "$(dirname "$0")/../runtime" && pwd)"
 

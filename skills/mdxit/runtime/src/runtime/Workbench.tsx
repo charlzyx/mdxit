@@ -46,6 +46,7 @@ type TocItem = {
 };
 
 const themeStorageKey = "mdxit.theme";
+const docsBasePath = "/docs";
 
 function getStoredTheme() {
   if (typeof window === "undefined") {
@@ -56,10 +57,44 @@ function getStoredTheme() {
   return themes.some((item) => item.name === stored) ? stored ?? "summer" : "summer";
 }
 
+function encodeRouteSegment(segment: string) {
+  return encodeURIComponent(segment).replace(/%2F/gi, "/");
+}
+
+function pathForDocumentPath(path: string) {
+  return `${docsBasePath}/${path.split("/").map(encodeRouteSegment).join("/")}`;
+}
+
+function documentPathFromLocation() {
+  if (!window.location.pathname.startsWith(`${docsBasePath}/`)) {
+    return null;
+  }
+
+  return decodeURIComponent(window.location.pathname.slice(docsBasePath.length + 1));
+}
+
+function activeIdFromLocation() {
+  if (!__MDXIT_TARGET_IS_DIR__) {
+    return documents[0]?.id ?? "fallback";
+  }
+
+  const currentPath = window.location.pathname;
+  if (currentPath === docsBasePath || currentPath === `${docsBasePath}/`) {
+    return "__dashboard__";
+  }
+
+  const path = documentPathFromLocation();
+  if (!path) {
+    return "__dashboard__";
+  }
+
+  return documents.find((document) => document.path === path)?.id ?? "__dashboard__";
+}
+
 export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentType }) {
   const [navOpened, nav] = useDisclosure(false);
   const [asideOpened, aside] = useDisclosure(false);
-  const [activeId, setActiveId] = useState(() => (__MDXIT_TARGET_IS_DIR__ ? "__dashboard__" : documents[0]?.id ?? "fallback"));
+  const [activeId, setActiveId] = useState(activeIdFromLocation);
   const [theme, setTheme] = useState(getStoredTheme);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [query, setQuery] = useState("");
@@ -100,8 +135,34 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   }, [setColorScheme, theme]);
 
   useEffect(() => {
+    if (!__MDXIT_TARGET_IS_DIR__) {
+      return;
+    }
+
+    const syncActiveFromLocation = () => {
+      setActiveId(activeIdFromLocation());
+    };
+
+    syncActiveFromLocation();
+    window.addEventListener("popstate", syncActiveFromLocation);
+    return () => window.removeEventListener("popstate", syncActiveFromLocation);
+  }, []);
+
+  useEffect(() => {
     window.__MDXIT_ACTIVE_DOCUMENT__ = isDashboard ? undefined : activeDocument?.path;
   }, [activeDocument?.path, isDashboard]);
+
+  useEffect(() => {
+    if (!__MDXIT_TARGET_IS_DIR__ || !activeDocument) {
+      return;
+    }
+
+    const nextPath = isDashboard ? docsBasePath : pathForDocumentPath(activeDocument.path);
+    const nextUrl = `${nextPath}${window.location.hash}`;
+    if (window.location.pathname !== nextPath || window.location.search) {
+      window.history.pushState({ activeId, path: nextPath }, "", nextUrl);
+    }
+  }, [activeDocument, activeId, isDashboard]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {

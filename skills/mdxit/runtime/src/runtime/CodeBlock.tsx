@@ -67,7 +67,7 @@ export function CodeBlock({ children, ...preProps }: { children?: ReactNode } & 
 
   if (language === "mermaid") return <Mermaid chart={code} />;
   if (language === "diff") return <DiffView code={code} />;
-  if (language === "antv") {
+  if (language === "chart") {
     const codeProps = codeElement?.props as Record<string, unknown> | undefined;
     // Meta can be in many places depending on rehype/MDX version
     const metaRaw = (

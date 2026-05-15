@@ -99,94 +99,112 @@ function mdxitDocuments(): Plugin {
   };
 }
 
-function mdxitDirectives(): Plugin {
+function mdxitCalloutMarkers(): Plugin {
   return {
-    name: "mdxit-directives",
+    name: "mdxit-callout-markers",
     enforce: "pre",
     transform(code, id) {
-      if (!/\.(md|mdx)$/.test(id) || !code.includes(":::")) {
+      const path = id.split("?", 1)[0];
+      if (!/\.(md|mdx)$/.test(path) || !code.includes("[!")) {
         return;
       }
 
       return {
-        code: transformMdxitDirectives(code),
+        code: transformMdxitCalloutMarkers(code),
         map: null
       };
     }
   };
 }
 
-function transformMdxitDirectives(code: string) {
-  const stack: string[] = [];
+function transformMdxitCalloutMarkers(code: string) {
   const lines = code.split("\n");
+  const out: string[] = [];
   let fence: { marker: "`" | "~"; length: number } | null = null;
 
-  return lines
-    .map((line) => {
-      const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/);
-      if (fenceMatch) {
-        const marker = fenceMatch[1][0] as "`" | "~";
-        const length = fenceMatch[1].length;
-        if (fence && fence.marker === marker && length >= fence.length) {
-          fence = null;
-        } else if (!fence) {
-          fence = { marker, length };
-        }
-        return line;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0] as "`" | "~";
+      const length = fenceMatch[1].length;
+      if (fence && fence.marker === marker && length >= fence.length) {
+        fence = null;
+      } else if (!fence) {
+        fence = { marker, length };
       }
+      out.push(line);
+      continue;
+    }
 
-      if (fence) {
-        return line;
+    if (fence) {
+      out.push(line);
+      continue;
+    }
+
+    const marker = line.match(/^\s*\[!(STEPS?|GRID|TABLE)([^\]]*)\]\s*$/i);
+    if (!marker) {
+      out.push(line);
+      continue;
+    }
+
+    const type = normalizeCalloutType(marker[1]);
+    const attrs = marker[2];
+    i += 1;
+
+    while (i < lines.length && lines[i].trim() === "") {
+      i += 1;
+    }
+
+    const block: string[] = [];
+    while (i < lines.length) {
+      const current = lines[i];
+      if (current.trim() === "") {
+        break;
       }
+      block.push(current);
+      i += 1;
+    }
 
-      const open = line.match(/^:::\s*(grid|item|grid-item)\b(.*)$/i);
-      if (open) {
-        const tag = open[1].toLowerCase() === "grid" ? "Grid" : "GridItem";
-        stack.push(tag);
-        return `<${tag}${formatDirectiveAttrs(open[2], tag)}>`;
-      }
+    out.push(`<SemanticCallout type="${type}"${formatCalloutAttrs(attrs, type)}>`);
+    out.push("");
+    out.push(...block);
+    out.push("");
+    out.push("</SemanticCallout>");
 
-      if (/^:::\s*$/.test(line) && stack.length) {
-        const tag = stack.pop();
-        return `</${tag}>`;
-      }
-
-      return line;
-    })
-    .join("\n");
-}
-
-function formatDirectiveAttrs(source: string, tag: string) {
-  const attrs: string[] = [];
-  const text = source.trim();
-  if (!text) {
-    return "";
-  }
-
-  if (tag === "Grid") {
-    const positionalColumns = text.match(/^([234])(?:\s|$)/);
-    if (positionalColumns) {
-      attrs.push(`columns={${positionalColumns[1]}}`);
+    if (i < lines.length) {
+      out.push(lines[i]);
     }
   }
+
+  return out.join("\n");
+}
+
+function normalizeCalloutType(source: string) {
+  const key = source.toUpperCase();
+  if (key === "STEP" || key === "STEPS") return "steps";
+  if (key === "GRID") return "grid";
+  return "table";
+}
+
+function formatCalloutAttrs(source: string, type: string) {
+  if (type === "grid") {
+    const match = source.trim().match(/^(\d+)$/);
+    return match ? ` columns={${match[1]}}` : "";
+  }
+
+  const attrs: string[] = [];
+  const text = source.trim();
+  if (!text) return "";
 
   const pattern = /([A-Za-z_][\w-]*)(?:=(?:"([^"]*)"|'([^']*)'|([^\s]+)))?/g;
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(text))) {
     const [, key, doubleQuoted, singleQuoted, bareValue] = match;
-    if (/^[234]$/.test(key) && tag === "Grid") {
-      continue;
-    }
-
     const value = doubleQuoted ?? singleQuoted ?? bareValue;
     if (value === undefined) {
       attrs.push(key);
-      continue;
-    }
-
-    if (/^-?\d+(\.\d+)?$/.test(value)) {
-      attrs.push(`${key}={${value}}`);
-    } else if (value === "true" || value === "false") {
+    } else if (/^-?\d+(\.\d+)?$/.test(value) || value === "true" || value === "false") {
       attrs.push(`${key}={${value}}`);
     } else {
       attrs.push(`${key}=${JSON.stringify(value)}`);
@@ -204,7 +222,7 @@ export default defineConfig({
     __MDXIT_WS_URL__: JSON.stringify(process.env.MDXIT_WS_URL ?? "")
   },
   plugins: [
-    mdxitDirectives(),
+    mdxitCalloutMarkers(),
     mdxitDocument(),
     mdxitDocuments(),
     mdx({
