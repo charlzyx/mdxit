@@ -2,6 +2,8 @@
 
 用语义组件提升 Markdown 的信息密度。Grid 多栏、Insight 指标卡、Fold 折叠、Steps 时间线——对 agent 仍是结构化文本，对人不再是线性滚动。
 
+MDXit increases Markdown's information density with semantic components. Grid columns, Insight metric cards, Fold sections, and Steps timelines keep documents structured for agents while making them easier for people to scan and review.
+
 ## 设计思路
 
 设计约束：**保留 Markdown 语义不丢失、语法复杂度不增加、预览信息密度提升。**

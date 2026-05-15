@@ -1,162 +1,163 @@
 ---
 name: mdxit
-description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划、技术决策记录、上线周报、审查报告，或任何需要人工审查/交互预览的 agent 文档产物时使用。也适用于"帮我整理一份方案"、"做个设计文档"、"写个技术方案"等场景。Markdown 优先，语义组件只用于提升信息密度。
+description: Use this skill when the user asks for a PRD, architecture proposal, QA report, migration plan, technical decision record, launch weekly report, review report, or any agent-generated document that benefits from human review or interactive preview. Also use it for requests like "organize this into a proposal", "write a design document", or "draft a technical plan". Prefer standard Markdown; use semantic components only when they increase information density.
 ---
 
 # MDXit
 
-用语义组件提升 Markdown 的信息密度，不变成 HTML。普通 Markdown 能表达的内容不要改写成组件。
+Use semantic components to increase Markdown information density without turning the document into HTML. If standard Markdown can express the content clearly, keep it as standard Markdown.
 
-## /mdxit 命令
+## `/mdxit` Command
 
-用户输入 `/mdxit <path>` 时，将 `<path>` 作为要预览的 MD/MDX 文件或文件夹：
+When the user enters `/mdxit <path>`, treat `<path>` as the MD/MDX file or folder to preview:
 
 ```bash
 MDXIT_FILE=<path> npm run dev
 ```
 
-路径可以是文件或目录。默认预览该路径下的所有 `.md` / `.mdx` 文件，自动生成导航树。
+The path can be a file or a directory. By default, the preview loads all `.md` / `.mdx` files under that path and generates a navigation tree automatically.
 
-## 先判断
+## Decide First
 
-使用 MDXit：
+Use MDXit when:
 
-- 用户要 PRD、架构方案、QA 报告、迁移计划、决策记录、审查报告。
-- 文档需要对比、指标、折叠、进度、步骤、图表等空间组织。
-- 用户需要交互预览，让审查者回答问题或提交修改意见。
+- The user needs a PRD, architecture proposal, QA report, migration plan, decision record, or review report.
+- The document needs spatial organization such as comparisons, metrics, folds, progress, steps, or charts.
+- The user needs an interactive preview where reviewers can answer questions or submit change suggestions.
 
-不要使用 MDXit：
+Do not use MDXit when:
 
-- 随口问答、短说明、纯聊天回复。
-- 用户明确要求纯 Markdown 或纯文本。
-- 长期归档且不需要预览时，不要加 `AskQuestion`。
+- The user is asking a casual question, requesting a short explanation, or chatting.
+- The user explicitly asks for plain Markdown or plain text.
+- The document is only for long-term archive and does not need preview; in that case, avoid `AskQuestion`.
 
-不确定是否启用交互时，先问：这个文档需要用户在预览页里回答问题或提交修改意见吗？
+If you are unsure whether interaction is needed, ask: "Does this document need reviewers to answer questions or submit change suggestions in the preview page?"
 
-## 对存量 Markdown 的工作模式
+## Working With Existing Markdown
 
-用户给到已有 `.md` 文件需要增强时，有三种模式：
+When the user provides an existing `.md` file to enhance, choose one of these modes:
 
-1. **原地修改**：直接修改当前 `.md` 文件，将内容调整为 MDXit 增强语法。适合用户明确表示"改这个文件"的场景。
-2. **复制增强**：复制原文件为 `<原名>.review.md`，在新文件中调整语法，原文件不动。适合用户想保留原始版本、或需要对比的场景。
-3. **询问选择**：用户未明确时，先列出两种模式让用户选。**默认推荐复制方式**。
+1. **Edit in place**: Modify the current `.md` file directly and convert suitable sections to MDXit enhanced syntax. Use this when the user explicitly says to edit the file.
+2. **Copy and enhance**: Copy the original file to `<original-name>.review.md`, then enhance the copy while leaving the original unchanged. Use this when the user wants to preserve the original or compare versions.
+3. **Ask the user to choose**: If the user has not specified a mode, present the two options and ask them to choose. **Recommend the copy-and-enhance mode by default.**
 
-无论哪种模式，只做以下增强：
-- 多段对比 → `<Grid>` / `[!Grid 2]`
-- 指标数字 → `<Insight metric>`
-- 进度/阶段 → `<ProgressBar>` / `<Steps>`
-- 选项切换 → `<Tabs>`
-- 详细展开 → `<Fold>`
-- 文件清单 → `<Tree>`
-- 需要确认的结论 → `<AskQuestion>`
-- 风险/警告文本 → `[!NOTE/TIP/OK/WARNING/DANGER]`
+Only apply these enhancements:
 
-不改动原文的事实性内容，不添加原文没有的信息。
+- Multi-part comparisons -> `<Grid>` / `[!Grid 2]`
+- Metrics and numbers -> `<Insight metric>`
+- Progress or phases -> `<ProgressBar>` / `<Steps>`
+- Option switching -> `<Tabs>`
+- Expandable details -> `<Fold>`
+- File lists -> `<Tree>`
+- Conclusions that need confirmation -> `<AskQuestion>`
+- Risk or warning text -> `[!NOTE/TIP/OK/WARNING/DANGER]`
 
-## 写作原则
+Do not change factual content from the source text. Do not add facts that are not present in the source text.
 
-1. 正文、列表、表格、引用、代码块、task list 用标准 Markdown，组件只做空间组织。
-2. `<b>` = 标题，`<small>` = 补充信息，children = 正文。
-3. 状态用 `ok` / `warn` / `risk` 属性，对应绿/黄/红色调。
-4. 块级增强使用独立标记行：`[!Steps]`、`[!Grid 2]`、`[!Table chart=bar]`。
-5. 不改动原文事实，不添加原文没有的信息。
-6. 用户用中文时文档也用中文。
+## Writing Principles
 
-## MDX 结构安全规则
+1. Use standard Markdown for prose, lists, tables, blockquotes, code blocks, and task lists. Use components only for spatial organization.
+2. Use `<b>` for titles, `<small>` for supplementary text, and component children for body content.
+3. Use `ok` / `warn` / `risk` status props for green / yellow / red visual tones.
+4. Use block enhancement markers as standalone lines: `[!Steps]`, `[!Grid 2]`, `[!Table chart=bar]`.
+5. Do not alter source facts or add information that was not in the source.
+6. Match the user's document language. If the user writes in Chinese, the generated document can be Chinese, but this `SKILL.md` must remain English.
 
-MDX 组件标签会被 Markdown 列表缩进规则影响。生成或改写 `.md` / `.mdx` 时必须遵守：
+## MDX Structure Safety Rules
 
-1. 块级 XML 组件标签必须从行首开始，不要为了嵌套美观缩进。适用于 `<Tabs>`、`<Tab>`、`<Grid>`、`<Insight>`、`<Fold>`、`<Steps>`、`<Step>`、`<Tree>`、`<AskQuestion>` 等块级标签。
-2. 如果组件内容以列表、表格、引用或代码块结束，闭合标签前后都保留一个空行，并且闭合标签仍然顶格写。
-3. 不要把块级组件放进 Markdown 列表项里。需要在 Tab/Grid 中表达列表时，把列表写在组件内部，组件标签顶格。
-4. 写完后自检：不存在形如 `  </Tab>`、`  <Tab ...>` 的缩进块级标签；否则 MDX 可能报 `Expected the closing tag ... after the end of listItem`。
+Markdown list indentation can affect MDX component tags. When generating or rewriting `.md` / `.mdx` files, follow these rules:
 
-Tabs 推荐写法：
+1. Block-level XML component tags must start at the beginning of the line. Do not indent them for visual nesting. This applies to `<Tabs>`, `<Tab>`, `<Grid>`, `<Insight>`, `<Fold>`, `<Steps>`, `<Step>`, `<Tree>`, `<AskQuestion>`, and similar block-level tags.
+2. If component content ends with a list, table, blockquote, or code block, leave a blank line before and after the closing tag, and keep the closing tag flush left.
+3. Do not place block-level components inside Markdown list items. If a Tab/Grid needs lists, put the lists inside the component body and keep the component tags flush left.
+4. Self-check after writing: there should be no indented block-level tags such as `  </Tab>` or `  <Tab ...>`. Otherwise MDX may fail with errors like `Expected the closing tag ... after the end of listItem`.
+
+Recommended Tabs pattern:
 
 ```mdx
 <Tabs>
-<Tab label="方案 A">
+<Tab label="Option A">
 
-- 第一条
-- 第二条
+- First item
+- Second item
 
 </Tab>
-<Tab label="方案 B">
+<Tab label="Option B">
 
-正文或列表。
+Body text or a list.
 
 </Tab>
 </Tabs>
 ```
 
-## 语法速查
+## Syntax Quick Reference
 
-详细语法、场景和组合示例见 `references/showcase.md`——**增强前必须先读**。
+Read `references/showcase.md` for detailed syntax, scenarios, and composition examples. **Always read it before enhancing a document.**
 
-| 组件 | 写法 | 用途 |
+| Component | Syntax | Use |
 |------|------|------|
-| `[!Grid 2]` + 标准列表 / `<Grid>` | 块级标记或 XML 标签 | 多栏对比、方案评估 |
-| `<Insight ok badge="..">` | `<b>`标题 + `<small>`副题 | 决策卡、风险卡、指标卡 |
-| `<ProgressBar value={72} ok>` | `<b>`标题 + 描述文本 | 进度百分比 |
-| `<Steps active={2}>` + `<Step>` | 水平或垂直步骤 | 阶段、时间线、里程碑 |
-| `<Tabs>` + `<Tab label="A">` | 每个 Tab 内放内容 | 多方案/多视图切换 |
-| `<Fold>` + `<b>`标题 | 折叠内容 | 详情、堆栈、长文本 |
-| `<Tree><ul><li>` + `<small>` | 原生列表语法 | 文件树、目录结构 |
-| `<AskQuestion id="x" question="..">` | 描述作为 children | 收集审查者反馈 |
-| `>[!NOTE\|TIP\|OK\|WARNING\|DANGER]` | blockquote | 提示、警告、状态 |
-| ` ```mermaid` / ` ```chart \| bar` | fenced code block | 流程图、柱状/折线/饼图 |
+| `[!Grid 2]` + standard list / `<Grid>` | Block marker or XML tag | Multi-column comparison, option evaluation |
+| `<Insight ok badge="..">` | `<b>` title + `<small>` subtitle | Decision card, risk card, metric card |
+| `<ProgressBar value={72} ok>` | `<b>` title + body text | Progress percentage |
+| `<Steps active={2}>` + `<Step>` | Horizontal or vertical steps | Phases, timeline, milestones |
+| `<Tabs>` + `<Tab label="A">` | One tab panel per option | Multiple options or views |
+| `<Fold>` + `<b>` title | Foldable content | Details, stack traces, long text |
+| `<Tree><ul><li>` + `<small>` | Native list syntax | File tree, directory structure |
+| `<AskQuestion id="x" question="..">` | Description as children | Collect reviewer feedback |
+| `>[!NOTE\|TIP\|OK\|WARNING\|DANGER]` | Blockquote | Notes, warnings, status callouts |
+| ` ```mermaid` / ` ```chart \| bar` | Fenced code block | Flowcharts, bar/line/pie charts |
 
-## 交互事件
+## Interaction Events
 
-用户在预览页回答 `AskQuestion` 或提交选中文字的修改意见后，事件写入 `.mdxit/session/events.jsonl`。需要处理这些事件时，读取 `references/events.md`。
+When the user answers an `AskQuestion` prompt or submits a suggestion for selected text in the preview page, events are written to `.mdxit/session/events.jsonl`. If you need to process those events, read `references/events.md`.
 
-## 定制目录
+## Customization Directories
 
-项目级：`.mdxit/` — session 事件、项目定制组件、主题。是否提交 Git 由项目决定。
+Project-level: `.mdxit/` for session events, project-specific components, and themes. Whether to commit this directory is project-specific.
 
-全局：`~/.config/mdxit/` — 跨项目共享的组件和主题。
+Global: `~/.config/mdxit/` for shared cross-project components and themes.
 
-运行时自动加载路径：
+Runtime auto-load paths:
 
-- `.mdxit/components/`（项目级，覆盖 `src/mdxit/components/`）
-- `src/mdxit/components/`（源码级）
-- `.mdxit/themes/`（项目级，覆盖 `src/mdxit/themes/`）
-- `src/mdxit/themes/`（源码级）
+- `.mdxit/components/` (project-level, overrides `src/mdxit/components/`)
+- `src/mdxit/components/` (source-level)
+- `.mdxit/themes/` (project-level, overrides `src/mdxit/themes/`)
+- `src/mdxit/themes/` (source-level)
 
-每个 `*.tsx` / `*.jsx` 文件自动注册。导出 `mdxitName` 指定标签名，否则取文件名。
+Each `*.tsx` / `*.jsx` file is registered automatically. Export `mdxitName` to specify the tag name; otherwise the file name is used.
 
 ```tsx
 // .mdxit/components/RiskMatrix.tsx
 export const mdxitName = "RiskMatrix";
 export default function RiskMatrix({ items }) {
-  return <section>{/* 项目专属审查交互 */}</section>;
+  return <section>{/* project-specific review interaction */}</section>;
 }
 ```
 
-自定义组件规则：
+Custom component rules:
 
-- 只在现有组件表达不了业务结构时添加。
-- 优先写到 `.mdxit/components/`，不要修改 runtime 或内置 primitives。
-- props 保持简单，适合 agent 生成和人类阅读。
-- 不要为了普通排版创建组件。
+- Add a custom component only when existing components cannot express the business structure.
+- Prefer writing it under `.mdxit/components/`; do not modify runtime or built-in primitives.
+- Keep props simple so agents can generate them and humans can read them.
+- Do not create components for ordinary layout or typography.
 
-## 预览
+## Preview
 
 ```bash
 npm run dev                                          # dev server + HMR
-node dist/cli/index.js preview examples              # 预览目录
-node dist/cli/index.js preview docs/proposal.md      # 预览单文件
+node dist/cli/index.js preview examples              # preview a directory
+node dist/cli/index.js preview docs/proposal.md      # preview a single file
 ```
 
-测试交互：
+Test interactions:
 
-1. 在 `AskQuestion` 中输入回答，Enter 提交，Shift+Enter 换行。
-2. 选中正文文字，点击浮层"修改意见"，输入反馈后提交。
-3. 查看 `.mdxit/session/events.jsonl` 确认事件写入。
+1. Type an answer in `AskQuestion`, press Enter to submit, and use Shift+Enter for a line break.
+2. Select body text, click the floating "Change suggestion" action, enter feedback, and submit.
+3. Check `.mdxit/session/events.jsonl` to confirm events were written.
 
-## 安装
+## Installation
 
-Skill 自带运行时，无需额外 clone。
+The skill includes its runtime and does not require an extra clone.
 
 ```bash
 npx skills add charlzyx/mdxit
@@ -164,7 +165,7 @@ cd skills/mdxit/runtime
 npm install && npm run build
 ```
 
-或运行 setup 脚本一键完成：
+Or run the setup script:
 
 ```bash
 bash skills/mdxit/scripts/setup.sh
