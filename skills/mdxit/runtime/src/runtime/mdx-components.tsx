@@ -1,6 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
-import { Children, cloneElement, isValidElement, createElement } from "react";
+import { Children, cloneElement, isValidElement, createElement, useLayoutEffect, useRef } from "react";
 import { Blockquote as MantineBlockquote } from "@mantine/core";
 import {
   Admonition,
@@ -37,8 +37,21 @@ type AdmonitionType = "note" | "tip" | "ok" | "warning" | "danger";
 
 const markerPattern = /^\s*\[!(NOTE|TIP|OK|WARNING|DANGER)\]\s*/i;
 
+function textFromNode(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+  if (node === null || node === undefined || typeof node === "boolean") {
+    return "";
+  }
+  if (isValidElement<{ children?: ReactNode }>(node)) {
+    return textFromNode(node.props.children);
+  }
+  return Children.toArray(node).map(textFromNode).join("");
+}
+
 function slugify(children: ReactNode) {
-  const text = String(children ?? "section")
+  const text = textFromNode(children)
     .toLowerCase()
     .trim()
     .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
@@ -48,8 +61,31 @@ function slugify(children: ReactNode) {
 
 function createHeading(level: 1 | 2 | 3) {
   return function Heading({ children }: { children?: ReactNode }) {
-    const id = `${slugify(children)}-${level}`;
-    return createElement(`h${level}`, { id, "data-toc-id": id, "data-toc-level": level }, children);
+    const ref = useRef<HTMLHeadingElement | null>(null);
+    const baseId = `${slugify(children)}-${level}`;
+
+    useLayoutEffect(() => {
+      const heading = ref.current;
+      const container = heading?.closest(".document-stage") ?? document;
+      const headings = Array.from(container.querySelectorAll<HTMLElement>("[data-toc-base-id]"));
+      const counts = new Map<string, number>();
+
+      for (const item of headings) {
+        const base = item.dataset.tocBaseId ?? "section";
+        const count = counts.get(base) ?? 0;
+        counts.set(base, count + 1);
+
+        const id = count === 0 ? base : `${base}-${count + 1}`;
+        item.id = id;
+        item.dataset.tocId = id;
+      }
+    }, [baseId]);
+
+    return createElement(
+      `h${level}`,
+      { ref, id: baseId, "data-toc-base-id": baseId, "data-toc-id": baseId, "data-toc-level": level },
+      children
+    );
   };
 }
 

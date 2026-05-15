@@ -502,7 +502,10 @@ export function MarkdownUl({ children }: { children: ReactNode }) {
   const { mode, options } = useSemanticRender();
   const items = extractChildProps<{ children?: ReactNode }>(children);
   const isTaskList = hasTaskItem(children);
-  const columns = typeof options.columns === "number" ? Number(options.columns) : 3;
+  const columns =
+    typeof options.columns === "number" || typeof options.columns === "string"
+      ? Number(options.columns)
+      : 3;
   if (isTaskList) {
     return <Checks>{children}</Checks>;
   }
@@ -523,8 +526,16 @@ export function MarkdownOl({ children }: { children: ReactNode }) {
   const items = extractChildProps<{ children?: ReactNode }>(children);
   return <Steps>{items.map((item, index) => <Step key={index}>{item.children}</Step>)}</Steps>;
 }
-export function MarkdownLi({ children }: { children: ReactNode }) {
-  const parsed = parseTaskListItem(children);
+export function MarkdownLi({
+  checked,
+  children,
+  className
+}: {
+  checked?: boolean | null;
+  children: ReactNode;
+  className?: string;
+}) {
+  const parsed = parseTaskListItem(children, checked);
   if (parsed) {
     return (
       <List.Item className="task-list-item">
@@ -533,19 +544,36 @@ export function MarkdownLi({ children }: { children: ReactNode }) {
       </List.Item>
     );
   }
-  return <List.Item>{children}</List.Item>;
+  return <List.Item className={className}>{children}</List.Item>;
 }
 
-function parseTaskListItem(children: ReactNode): { checked: boolean; content: ReactNode } | null {
-  const arr = Children.toArray(children);
+function parseTaskListItem(children: ReactNode, checked?: boolean | null): { checked: boolean; content: ReactNode } | null {
+  const arr = flattenP(children);
   if (!arr.length) return null;
-  const first = arr[0];
-  if (!isValidElement<{ type?: string; checked?: unknown }>(first) || first.props.type !== "checkbox") return null;
-  return { checked: Boolean(first.props.checked), content: arr.slice(1) };
+  const firstInputIndex = arr.findIndex(isCheckboxInput);
+
+  if (firstInputIndex !== -1) {
+    const input = arr[firstInputIndex] as React.ReactElement<{ checked?: unknown }>;
+    return { checked: Boolean(input.props.checked), content: arr.slice(firstInputIndex + 1) };
+  }
+
+  if (typeof checked === "boolean") {
+    return { checked, content: arr };
+  }
+
+  return null;
+}
+
+function isCheckboxInput(child: ReactNode): boolean {
+  return isValidElement<{ type?: string }>(child) && child.type === "input" && child.props.type === "checkbox";
 }
 
 function hasTaskItem(children: ReactNode): boolean {
-  return Children.toArray(children).some((c) => isValidElement<{ children?: ReactNode }>(c) && parseTaskListItem(c.props.children) !== null);
+  return Children.toArray(children).some(
+    (c) =>
+      isValidElement<{ checked?: boolean | null; children?: ReactNode }>(c) &&
+      parseTaskListItem(c.props.children, c.props.checked) !== null
+  );
 }
 
 export function MarkdownA({ href, children }: { href?: string; children: ReactNode }) {

@@ -36,6 +36,18 @@ export function AntVChart({ chartType, code }: { chartType: string; code: string
   useEffect(() => {
     let cancelled = false;
 
+    const cleanupChart = () => {
+      if (chartInstanceRef.current?.destroy) {
+        chartInstanceRef.current.destroy();
+      }
+      chartInstanceRef.current = null;
+
+      if (canvasRef.current?.parentNode) {
+        canvasRef.current.parentNode.removeChild(canvasRef.current);
+      }
+      canvasRef.current = null;
+    };
+
     async function render() {
       let config: ChartConfig;
       try {
@@ -52,13 +64,7 @@ export function AntVChart({ chartType, code }: { chartType: string; code: string
       const width = config.width ?? container.clientWidth;
       const height = config.height ?? Math.max(280, width * 0.55);
 
-      // Destroy previous chart
-      if (chartInstanceRef.current?.destroy) {
-        chartInstanceRef.current.destroy();
-      }
-      if (canvasRef.current?.parentNode) {
-        canvasRef.current.parentNode.removeChild(canvasRef.current);
-      }
+      cleanupChart();
 
       const canvas = document.createElement("canvas");
       canvas.width = width * (window.devicePixelRatio || 2);
@@ -115,6 +121,7 @@ export function AntVChart({ chartType, code }: { chartType: string; code: string
 
     return () => {
       cancelled = true;
+      cleanupChart();
     };
   }, [chartType, code]);
 

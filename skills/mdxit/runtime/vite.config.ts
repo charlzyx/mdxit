@@ -99,119 +99,257 @@ function mdxitDocuments(): Plugin {
   };
 }
 
-function mdxitCalloutMarkers(): Plugin {
-  return {
-    name: "mdxit-callout-markers",
-    enforce: "pre",
-    transform(code, id) {
-      const path = id.split("?", 1)[0];
-      if (!/\.(md|mdx)$/.test(path) || !code.includes("[!")) {
-        return;
-      }
+type MdastNode = {
+  type: string;
+  value?: string;
+  name?: string;
+  attributes?: unknown[];
+  checked?: boolean | null;
+  ordered?: boolean;
+  spread?: boolean;
+  start?: number | null;
+  children?: MdastNode[];
+};
 
-      return {
-        code: transformMdxitCalloutMarkers(code),
-        map: null
-      };
-    }
+type SemanticCalloutMarker = {
+  type: "steps" | "grid" | "table";
+  attrs: Record<string, string | null>;
+};
+
+function remarkMdxitCalloutMarkers() {
+  return (tree: MdastNode) => {
+    transformCalloutMarkers(tree);
   };
 }
 
-function transformMdxitCalloutMarkers(code: string) {
-  const lines = code.split("\n");
-  const out: string[] = [];
-  let fence: { marker: "`" | "~"; length: number } | null = null;
+function transformCalloutMarkers(parent: MdastNode) {
+  const children = parent.children;
+  if (!children) return;
 
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i];
-    const fenceMatch = line.match(/^\s*(`{3,}|~{3,})/);
-    if (fenceMatch) {
-      const marker = fenceMatch[1][0] as "`" | "~";
-      const length = fenceMatch[1].length;
-      if (fence && fence.marker === marker && length >= fence.length) {
-        fence = null;
-      } else if (!fence) {
-        fence = { marker, length };
-      }
-      out.push(line);
-      continue;
-    }
-
-    if (fence) {
-      out.push(line);
-      continue;
-    }
-
-    const marker = line.match(/^\s*\[!(STEPS?|GRID|TABLE)([^\]]*)\]\s*$/i);
+  for (let index = 0; index < children.length; index += 1) {
+    const marker = parseCalloutMarker(children[index]);
     if (!marker) {
-      out.push(line);
+      transformCalloutMarkers(children[index]);
       continue;
     }
 
-    const type = normalizeCalloutType(marker[1]);
-    const attrs = marker[2];
-    i += 1;
-
-    while (i < lines.length && lines[i].trim() === "") {
-      i += 1;
-    }
-
-    const block: string[] = [];
-    while (i < lines.length) {
-      const current = lines[i];
-      if (current.trim() === "") {
-        break;
-      }
-      block.push(current);
-      i += 1;
-    }
-
-    out.push(`<SemanticCallout type="${type}"${formatCalloutAttrs(attrs, type)}>`);
-    out.push("");
-    out.push(...block);
-    out.push("");
-    out.push("</SemanticCallout>");
-
-    if (i < lines.length) {
-      out.push(lines[i]);
-    }
+    const child = children[index + 1];
+    const split = splitCalloutChild(marker, child);
+    const wrapped = createSemanticCalloutNode(marker, split.child);
+    children.splice(index, split.consumeChild ? 2 : 1, wrapped, ...split.remainder);
+    transformCalloutMarkers(wrapped);
   }
-
-  return out.join("\n");
 }
 
-function normalizeCalloutType(source: string) {
+function parseCalloutMarker(node: MdastNode): SemanticCalloutMarker | null {
+  if (node.type !== "paragraph" || node.children?.length !== 1) {
+    return null;
+  }
+
+  const text = node.children[0];
+  if (text.type !== "text" || typeof text.value !== "string") {
+    return null;
+  }
+
+  const marker = readCalloutMarker(text.value);
+  if (!marker) {
+    return null;
+  }
+
+  return {
+    type: normalizeCalloutType(marker.name),
+    attrs: parseCalloutAttributes(marker.attrs, marker.name)
+  };
+}
+
+function readCalloutMarker(value: string) {
+  const text = value.trim();
+  if (!text.startsWith("[!") || !text.endsWith("]")) {
+    return null;
+  }
+
+  const body = text.slice(2, -1).trim();
+  if (!body) {
+    return null;
+  }
+
+  const separator = firstWhitespaceIndex(body);
+  const name = separator === -1 ? body : body.slice(0, separator);
+  const normalized = name.toUpperCase();
+  if (normalized !== "STEP" && normalized !== "STEPS" && normalized !== "GRID" && normalized !== "TABLE") {
+    return null;
+  }
+
+  return {
+    name,
+    attrs: separator === -1 ? "" : body.slice(separator + 1).trim()
+  };
+}
+
+function firstWhitespaceIndex(value: string) {
+  for (let i = 0; i < value.length; i += 1) {
+    if (value[i] === " " || value[i] === "\t" || value[i] === "\n") {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function normalizeCalloutType(source: string): SemanticCalloutMarker["type"] {
   const key = source.toUpperCase();
   if (key === "STEP" || key === "STEPS") return "steps";
   if (key === "GRID") return "grid";
   return "table";
 }
 
-function formatCalloutAttrs(source: string, type: string) {
-  if (type === "grid") {
-    const match = source.trim().match(/^(\d+)$/);
-    return match ? ` columns={${match[1]}}` : "";
+function parseCalloutAttributes(source: string, name: string) {
+  const attrs: Record<string, string | null> = {};
+  const text = source.trim();
+  if (!text) return attrs;
+
+  if (normalizeCalloutType(name) === "grid" && isUnsignedInteger(text)) {
+    attrs.columns = text;
+    return attrs;
   }
 
-  const attrs: string[] = [];
-  const text = source.trim();
-  if (!text) return "";
+  for (const token of tokenizeAttributes(text)) {
+    const separator = token.indexOf("=");
+    if (separator === -1) {
+      attrs[token] = null;
+      continue;
+    }
 
-  const pattern = /([A-Za-z_][\w-]*)(?:=(?:"([^"]*)"|'([^']*)'|([^\s]+)))?/g;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(text))) {
-    const [, key, doubleQuoted, singleQuoted, bareValue] = match;
-    const value = doubleQuoted ?? singleQuoted ?? bareValue;
-    if (value === undefined) {
-      attrs.push(key);
-    } else if (/^-?\d+(\.\d+)?$/.test(value) || value === "true" || value === "false") {
-      attrs.push(`${key}={${value}}`);
-    } else {
-      attrs.push(`${key}=${JSON.stringify(value)}`);
+    const key = token.slice(0, separator);
+    const rawValue = token.slice(separator + 1);
+    if (key) {
+      attrs[key] = unquote(rawValue);
     }
   }
 
-  return attrs.length ? ` ${attrs.join(" ")}` : "";
+  return attrs;
+}
+
+function tokenizeAttributes(value: string) {
+  const tokens: string[] = [];
+  let current = "";
+  let quote: "'" | "\"" | null = null;
+
+  for (const char of value) {
+    if ((char === "'" || char === "\"") && !quote) {
+      quote = char;
+      current += char;
+      continue;
+    }
+
+    if (quote === char) {
+      quote = null;
+      current += char;
+      continue;
+    }
+
+    if (!quote && (char === " " || char === "\t" || char === "\n")) {
+      if (current) {
+        tokens.push(current);
+        current = "";
+      }
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current) {
+    tokens.push(current);
+  }
+
+  return tokens;
+}
+
+function unquote(value: string) {
+  if (value.length >= 2) {
+    const first = value[0];
+    const last = value[value.length - 1];
+    if ((first === "\"" && last === "\"") || (first === "'" && last === "'")) {
+      return value.slice(1, -1);
+    }
+  }
+  return value;
+}
+
+function isUnsignedInteger(value: string) {
+  if (!value) return false;
+  for (const char of value) {
+    if (char < "0" || char > "9") {
+      return false;
+    }
+  }
+  return true;
+}
+
+function createSemanticCalloutNode(marker: SemanticCalloutMarker, child?: MdastNode): MdastNode {
+  return {
+    type: "mdxJsxFlowElement",
+    name: "SemanticCallout",
+    attributes: [
+      { type: "mdxJsxAttribute", name: "type", value: marker.type },
+      ...Object.entries(marker.attrs).map(([name, value]) => ({
+        type: "mdxJsxAttribute",
+        name,
+        value
+      }))
+    ],
+    children: child ? [child] : []
+  };
+}
+
+function splitCalloutChild(marker: SemanticCalloutMarker, node: MdastNode | undefined) {
+  if (!canWrapCalloutChild(node)) {
+    return { child: undefined, consumeChild: false, remainder: [] as MdastNode[] };
+  }
+
+  if (marker.type !== "grid" || node.type !== "list" || !node.children) {
+    return { child: node, consumeChild: true, remainder: [] as MdastNode[] };
+  }
+
+  const firstTaskIndex = node.children.findIndex((item) => item.checked !== null && item.checked !== undefined);
+  if (firstTaskIndex <= 0) {
+    return { child: node, consumeChild: true, remainder: [] as MdastNode[] };
+  }
+
+  const taskList: MdastNode = {
+    ...node,
+    children: node.children.slice(firstTaskIndex)
+  };
+  const gridList: MdastNode = {
+    ...node,
+    children: [...node.children.slice(0, firstTaskIndex), createChecklistGridItem(taskList)]
+  };
+
+  return { child: gridList, consumeChild: true, remainder: [] as MdastNode[] };
+}
+
+function canWrapCalloutChild(node: MdastNode | undefined): node is MdastNode {
+  return Boolean(node && node.type !== "heading" && !parseCalloutMarker(node));
+}
+
+function createChecklistGridItem(taskList: MdastNode): MdastNode {
+  return {
+    type: "listItem",
+    checked: null,
+    spread: true,
+    children: [
+      {
+        type: "paragraph",
+        children: [
+          {
+            type: "strong",
+            children: [{ type: "text", value: "检查项" }]
+          }
+        ]
+      },
+      taskList
+    ]
+  };
 }
 
 export default defineConfig({
@@ -222,7 +360,6 @@ export default defineConfig({
     __MDXIT_WS_URL__: JSON.stringify(process.env.MDXIT_WS_URL ?? "")
   },
   plugins: [
-    mdxitCalloutMarkers(),
     mdxitDocument(),
     mdxitDocuments(),
     mdx({
@@ -231,7 +368,7 @@ export default defineConfig({
       mdExtensions: [],
       mdxExtensions: [".mdx", ".md"],
       providerImportSource: "@mdx-js/react",
-      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm]
+      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm, remarkMdxitCalloutMarkers]
     }),
     react()
   ],

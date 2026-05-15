@@ -11,7 +11,6 @@ import {
   ScrollArea,
   Stack,
   Text,
-  TextInput,
   Title,
   Tooltip,
   Tree,
@@ -28,7 +27,6 @@ import {
   FolderOpen,
   Home,
   Moon,
-  Search,
   Palette,
   Sun,
   Check,
@@ -97,7 +95,6 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   const [activeId, setActiveId] = useState(activeIdFromLocation);
   const [theme, setTheme] = useState(getStoredTheme);
   const [toc, setToc] = useState<TocItem[]>([]);
-  const [query, setQuery] = useState("");
   const { setColorScheme } = useMantineColorScheme();
 
   const activeDocument = useMemo(
@@ -107,17 +104,7 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
   const ActiveDocument = activeDocument?.Component ?? fallbackDocument;
   const isDashboard = activeId === "__dashboard__" && __MDXIT_TARGET_IS_DIR__;
 
-  const visibleDocuments = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) {
-      return documents;
-    }
-
-    return documents.filter((document) =>
-      `${document.title} ${document.group} ${document.description}`.toLowerCase().includes(normalized)
-    );
-  }, [query]);
-  const treeData = useMemo(() => buildDocumentTree(visibleDocuments), [visibleDocuments]);
+  const treeData = useMemo(() => buildDocumentTree(documents), []);
   const tree = useTree({
     initialExpandedState: { root: true },
     selectedState: [activeId],
@@ -303,7 +290,7 @@ export function Workbench({ fallbackDocument }: { fallbackDocument: ComponentTyp
         <AppShell.Main>
           <Box className="document-stage">
             {isDashboard ? (
-              <DocumentDashboard documents={visibleDocuments} onOpen={setActiveId} />
+              <DocumentDashboard documents={documents} onOpen={setActiveId} />
             ) : (
               <ActiveDocument />
             )}

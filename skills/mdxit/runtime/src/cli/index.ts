@@ -61,9 +61,14 @@ async function createPreviewSession(projectDir: string, targetPath: string): Pro
 
     socket.write(createWebSocketHandshake(request));
     sockets.add(socket);
+    const parser = createWebSocketFrameParser();
     socket.on("data", (chunk) => {
-      for (const payload of decodeWebSocketFrames(chunk)) {
+      const result = parser.push(chunk);
+      for (const payload of result.messages) {
         void recordEvent(eventsFile, id, targetPath, payload);
+      }
+      if (result.close) {
+        socket.end();
       }
     });
     socket.on("close", () => sockets.delete(socket));
@@ -108,13 +113,61 @@ function createWebSocketHandshake(request: IncomingMessage) {
   ].join("\r\n");
 }
 
-function decodeWebSocketFrames(buffer: Buffer): string[] {
-  const messages: string[] = [];
+type WebSocketParseResult = {
+  messages: string[];
+  close: boolean;
+};
+
+type WebSocketFrame = {
+  final: boolean;
+  opcode: number;
+  payload: Buffer;
+};
+
+function createWebSocketFrameParser() {
+  let buffer: Buffer = Buffer.alloc(0);
+  let fragmentedText: Buffer[] = [];
+
+  return {
+    push(chunk: Buffer): WebSocketParseResult {
+      buffer = buffer.length === 0 ? chunk : Buffer.concat([buffer, chunk]);
+      const result = decodeWebSocketFrames(buffer);
+      buffer = buffer.subarray(result.bytesConsumed);
+
+      const messages: string[] = [];
+      for (const frame of result.frames) {
+        if (frame.opcode === 0x1) {
+          if (frame.final) {
+            messages.push(frame.payload.toString("utf8"));
+          } else {
+            fragmentedText = [frame.payload];
+          }
+        } else if (frame.opcode === 0x0 && fragmentedText.length) {
+          fragmentedText.push(frame.payload);
+          if (frame.final) {
+            messages.push(Buffer.concat(fragmentedText).toString("utf8"));
+            fragmentedText = [];
+          }
+        }
+      }
+
+      return {
+        messages,
+        close: result.close
+      };
+    }
+  };
+}
+
+function decodeWebSocketFrames(buffer: Buffer): { frames: WebSocketFrame[]; close: boolean; bytesConsumed: number } {
+  const frames: WebSocketFrame[] = [];
   let offset = 0;
+  let close = false;
 
   while (offset + 2 <= buffer.length) {
     const firstByte = buffer[offset];
     const secondByte = buffer[offset + 1];
+    const final = (firstByte & 0x80) === 0x80;
     const opcode = firstByte & 0x0f;
     const masked = (secondByte & 0x80) === 0x80;
     let length = secondByte & 0x7f;
@@ -138,10 +191,12 @@ function decodeWebSocketFrames(buffer: Buffer): string[] {
     if (payloadEnd > buffer.length) break;
 
     if (opcode === 0x8) {
+      close = true;
+      offset = payloadEnd;
       break;
     }
 
-    if (opcode === 0x1) {
+    if (opcode === 0x1 || opcode === 0x0) {
       const payload = Buffer.from(buffer.subarray(payloadStart, payloadEnd));
       if (masked) {
         const mask = buffer.subarray(offset + headerLength, offset + headerLength + 4);
@@ -149,13 +204,13 @@ function decodeWebSocketFrames(buffer: Buffer): string[] {
           payload[i] ^= mask[i % 4];
         }
       }
-      messages.push(payload.toString("utf8"));
+      frames.push({ final, opcode, payload });
     }
 
     offset = payloadEnd;
   }
 
-  return messages;
+  return { frames, close, bytesConsumed: offset };
 }
 
 async function recordEvent(eventsFile: string, sessionId: string, targetPath: string, payload: string) {
