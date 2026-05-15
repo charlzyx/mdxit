@@ -317,6 +317,43 @@ pre,
   margin-bottom: 18px;
 }
 
+.mdxit-block.mantine-Tabs-root {
+  --tabs-active-bg: color-mix(in srgb, var(--accent) 13%, var(--panel));
+  --tabs-active-border: color-mix(in srgb, var(--accent) 58%, var(--border));
+}
+
+.mdxit-block .mantine-Tabs-list {
+  gap: 4px;
+  border-bottom-color: var(--tabs-active-border);
+}
+
+.mdxit-block .mantine-Tabs-tab {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--panel) 94%, var(--bg));
+  color: var(--muted);
+  font-weight: 650;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.mdxit-block .mantine-Tabs-tab:hover {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel));
+  color: var(--text);
+}
+
+.mdxit-block .mantine-Tabs-tab[data-active] {
+  border-color: var(--tabs-active-border);
+  background: var(--tabs-active-bg);
+  color: var(--accent-strong);
+  box-shadow:
+    inset 0 -3px 0 var(--accent),
+    0 1px 0 var(--tabs-active-bg);
+}
+
 .mdxit-block.mantine-Blockquote-root {
   padding: 10px 14px;
 }
