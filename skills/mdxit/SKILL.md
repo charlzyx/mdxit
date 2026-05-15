@@ -1,34 +1,11 @@
 ---
 name: mdxit
-description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划、决策记录、审查报告，或需要人工审查/交互预览的 agent 文档产物时使用。Markdown 优先，语义组件只用于提升信息密度；语法标准以 references/showcase.md 为准。
+description: 当用户要求输出 PRD、架构方案、QA 报告、迁移计划、技术决策记录、上线周报、审查报告，或任何需要人工审查/交互预览的 agent 文档产物时使用。也适用于"帮我整理一份方案"、"做个设计文档"、"写个技术方案"等场景。Markdown 优先，语义组件只用于提升信息密度。
 ---
 
 # MDXit
 
 用语义组件提升 Markdown 的信息密度，不变成 HTML。普通 Markdown 能表达的内容不要改写成组件。
-
-## 安装
-
-Skill 自带运行时，无需额外 clone。
-
-```bash
-npx skills add charlzyx/mdxit
-cd skills/mdxit/runtime
-npm install && npm run build
-```
-
-预览文档：
-
-```bash
-node dist/cli/index.js preview <file-or-dir>
-npm run dev                    # dev server + HMR
-```
-
-或运行 setup 脚本一键完成：
-
-```bash
-bash skills/mdxit/scripts/setup.sh
-```
 
 ## /mdxit 命令
 
@@ -104,29 +81,7 @@ MDXIT_FILE=<path> npm run dev
 
 ## 交互事件
 
-`mdxit preview` 启动后会监听页面交互，写入：
-
-```text
-.mdxit/session/events.jsonl
-```
-
-事件类型：
-
-- `question.answer` — AskQuestion 的用户回答
-- `selection.feedback` — 用户选中文字后提交的修改意见
-- `selection.copy` — 用户通过浮层复制文本
-
-agent 不会天然订阅这个文件。交互式预览要生效时，agent 或外层 wrapper 必须监听
-`.mdxit/session/events.jsonl` 的新增行（`fs.watch`、轮询 size/mtime、或 `tail -f`）。
-
-处理流程：
-
-1. 监听 events.jsonl 新增行。
-2. 只处理当前 session 的新事件，记录最后读取的行号或 `receivedAt`。
-3. 根据 `question.answer` 或 `selection.feedback` 修改对应 `.md` / `.mdx` 源文档。
-4. Vite HMR 自动刷新预览。
-
-不要把监听逻辑做进组件；组件只发送事件。处理事件时优先做小范围文档修改。
+用户在预览页回答 `AskQuestion` 或提交选中文字的修改意见后，事件写入 `.mdxit/session/events.jsonl`。需要处理这些事件时，读取 `references/events.md`。
 
 ## 定制目录
 
@@ -171,3 +126,19 @@ node dist/cli/index.js preview docs/proposal.md      # 预览单文件
 1. 在 `AskQuestion` 中输入回答，Enter 提交，Shift+Enter 换行。
 2. 选中正文文字，点击浮层"修改意见"，输入反馈后提交。
 3. 查看 `.mdxit/session/events.jsonl` 确认事件写入。
+
+## 安装
+
+Skill 自带运行时，无需额外 clone。
+
+```bash
+npx skills add charlzyx/mdxit
+cd skills/mdxit/runtime
+npm install && npm run build
+```
+
+或运行 setup 脚本一键完成：
+
+```bash
+bash skills/mdxit/scripts/setup.sh
+```
